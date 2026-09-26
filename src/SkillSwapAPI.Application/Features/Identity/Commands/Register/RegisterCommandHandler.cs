@@ -15,19 +15,22 @@ public sealed class RegisterCommandHandler(
 {
     public async Task<Result<UserDto>> Handle(RegisterCommand command, CancellationToken ct)
     {
-        var result = await identityService.CreateAsync(command.Email, command.Password, ct);
+        var result = await identityService.CreateAsync(
+            command.FirstName, command.LastName, command.Email, command.Password, ct);
+
         if (result.IsError)
         {
             logger.LogWarning("Registration failed for email {Email}", command.Email);
             return result.Errors;
         }
 
-        // Send confirmation OTP code via email service
         await otpService.SendEmailConfirmationAsync(command.Email, ct);
 
         return new UserDto(
             result.Value.UserId,
             result.Value.Email,
+            result.Value.FirstName,
+            result.Value.LastName,
             null
         );
     }

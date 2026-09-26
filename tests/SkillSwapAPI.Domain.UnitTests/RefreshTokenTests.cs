@@ -24,6 +24,7 @@ public class RefreshTokenTests
         Assert.Equal(token, result.Value.Token);
         Assert.Equal(userId, result.Value.UserId);
         Assert.Equal(expiry, result.Value.ExpiresOnUtc);
+        Assert.False(result.Value.IsRevoked);
     }
 
     [Fact]

@@ -1,6 +1,8 @@
 namespace SkillSwapAPI.Application.Features.Identity.Dtos;
 
 public sealed record UserDto(
-    string Id,
+    Guid UserId,
     string Email,
-    string? FullName);
+    string FirstName,
+    string LastName,
+    string? Token);

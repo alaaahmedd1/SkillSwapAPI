@@ -3,6 +3,7 @@ using SkillSwapAPI.Application.Common.Errors;
 using SkillSwapAPI.Application.Common.Interfaces.Identity;
 using SkillSwapAPI.Application.Common.Models;
 using SkillSwapAPI.Application.Features.Identity.Dtos;
+using SkillSwapAPI.Application.Features.Users.Dtos;
 using SkillSwapAPI.Domain.Common.Results;
 using System.Security.Claims;
 
@@ -13,7 +14,9 @@ public sealed class IdentityService(
     SignInManager<AppUser> signInManager)
     : IIdentityService
 {
-    public async Task<Result<AppUserDto>> CreateAsync(string email, string password, CancellationToken ct = default)
+    public async Task<Result<AppUserDto>> CreateAsync(
+        string firstName, string lastName, string email, string password,
+        CancellationToken ct = default)
     {
         var existingUser = await userManager.FindByEmailAsync(email);
         if (existingUser is not null)
@@ -25,7 +28,11 @@ public sealed class IdentityService(
         {
             UserName = email,
             Email = email,
-            EmailConfirmed = false
+            EmailConfirmed = false,
+            FirstName = firstName,
+            LastName = lastName,
+            IsActive = true,
+            CreatedAtUtc = DateTimeOffset.UtcNow
         };
 
         var result = await userManager.CreateAsync(user, password);
@@ -38,7 +45,10 @@ public sealed class IdentityService(
         var roles = await userManager.GetRolesAsync(user);
         var claims = await userManager.GetClaimsAsync(user);
 
-        return new AppUserDto(user.Id, user.Email!, roles, claims);
+        return new AppUserDto(
+            user.Id, user.Email!, user.FirstName, user.LastName,
+            user.AverageRating, user.TotalReviewsCount, user.IsActive, user.CreatedAtUtc,
+            roles, claims);
     }
 
     public async Task<Result<AppUserDto>> AuthenticateAsync(string email, string password, CancellationToken ct = default)
@@ -68,7 +78,10 @@ public sealed class IdentityService(
         var roles = await userManager.GetRolesAsync(user);
         var claims = await userManager.GetClaimsAsync(user);
 
-        return new AppUserDto(user.Id, user.Email!, roles, claims);
+        return new AppUserDto(
+            user.Id, user.Email!, user.FirstName, user.LastName,
+            user.AverageRating, user.TotalReviewsCount, user.IsActive, user.CreatedAtUtc,
+            roles, claims);
     }
 
     public async Task<Result<AppUserDto>> GetUserByIdAsync(string userId, CancellationToken ct = default)
@@ -82,7 +95,10 @@ public sealed class IdentityService(
         var roles = await userManager.GetRolesAsync(user);
         var claims = await userManager.GetClaimsAsync(user);
 
-        return new AppUserDto(user.Id, user.Email!, roles, claims);
+        return new AppUserDto(
+            user.Id, user.Email!, user.FirstName, user.LastName,
+            user.AverageRating, user.TotalReviewsCount, user.IsActive, user.CreatedAtUtc,
+            roles, claims);
     }
 
     public async Task<bool> IsInRoleAsync(string userId, string role, CancellationToken ct = default)
@@ -102,11 +118,18 @@ public sealed class IdentityService(
         var user = await userManager.FindByEmailAsync(socialUser.Email);
         if (user is null)
         {
+
+            var (firstName, lastName) = SplitFullName(socialUser.FullName);
+
             user = new AppUser
             {
                 UserName = socialUser.Email,
                 Email = socialUser.Email,
-                EmailConfirmed = true
+                EmailConfirmed = true,
+                FirstName = firstName,
+                LastName = lastName,
+                IsActive = true,
+                CreatedAtUtc = DateTimeOffset.UtcNow
             };
 
             var createResult = await userManager.CreateAsync(user);
@@ -123,14 +146,14 @@ public sealed class IdentityService(
         var roles = await userManager.GetRolesAsync(user);
         var claims = await userManager.GetClaimsAsync(user);
 
-        return new AppUserDto(user.Id, user.Email!, roles, claims);
+        return new AppUserDto(
+            user.Id, user.Email!, user.FirstName, user.LastName,
+            user.AverageRating, user.TotalReviewsCount, user.IsActive, user.CreatedAtUtc,
+            roles, claims);
     }
 
     public async Task<Result<Updated>> UpdateIdentityUserAsync(
-        string identityId,
-        string? email,
-        string? currentPassword,
-        string? newPassword,
+        string identityId, string? email, string? currentPassword, string? newPassword,
         CancellationToken ct = default)
     {
         var user = await userManager.FindByIdAsync(identityId);
@@ -158,4 +181,102 @@ public sealed class IdentityService(
 
         return Result.Updated;
     }
+
+    public async Task<Result<ProfileIdentityDto>> GetProfileAsync(Guid userId, CancellationToken ct = default)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        return user is null ? ApplicationErrors.Auth.UserNotFound : ToProfileIdentityDto(user);
+    }
+
+    public async Task<IReadOnlyList<ProfileIdentityDto>> GetProfilesAsync(
+        IReadOnlyCollection<Guid> userIds,
+        CancellationToken ct = default)
+    {
+        if (userIds.Count == 0)
+        {
+            return [];
+        }
+
+        var users = new List<ProfileIdentityDto>();
+        foreach (var userId in userIds)
+        {
+            ct.ThrowIfCancellationRequested();
+            var user = await userManager.FindByIdAsync(userId.ToString());
+            if (user is not null)
+            {
+                users.Add(ToProfileIdentityDto(user));
+            }
+        }
+
+        return users;
+    }
+
+    public async Task<Result<Updated>> UpdateProfileAsync(
+        Guid userId,
+        string firstName,
+        string lastName,
+        CancellationToken ct = default)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+        {
+            return ApplicationErrors.Auth.UserNotFound;
+        }
+
+        user.FirstName = firstName;
+        user.LastName = lastName;
+
+        var result = await userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            var error = result.Errors.FirstOrDefault();
+            return Error.Validation(error?.Code ?? "Profile.UpdateFailed", error?.Description ?? "Failed to update profile.");
+        }
+
+        return Result.Updated;
+    }
+
+    public async Task<Result<Updated>> UpdateProfileNamesAsync(
+        string identityId,
+        string firstName,
+        string lastName,
+        CancellationToken ct = default)
+    {
+        var user = await userManager.FindByIdAsync(identityId);
+        if (user is null)
+        {
+            return ApplicationErrors.Auth.UserNotFound;
+        }
+
+        user.FirstName = firstName;
+        user.LastName = lastName;
+
+        var result = await userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            var error = result.Errors.FirstOrDefault();
+            return Error.Validation(error?.Code ?? "Profile.UpdateFailed", error?.Description ?? "Failed to update profile.");
+        }
+
+        return Result.Updated;
+    }
+
+    private static (string FirstName, string LastName) SplitFullName(string fullName)
+    {
+        if (string.IsNullOrWhiteSpace(fullName))
+            return (string.Empty, string.Empty);
+
+        var parts = fullName.Trim().Split(' ', 2);
+        return parts.Length == 2 ? (parts[0], parts[1]) : (parts[0], string.Empty);
+    }
+
+    private static ProfileIdentityDto ToProfileIdentityDto(AppUser user) => new(
+        user.Id,
+        user.FirstName,
+        user.LastName,
+        user.Email ?? string.Empty,
+        user.AverageRating,
+        user.TotalReviewsCount,
+        user.IsActive,
+        user.CreatedAtUtc);
 }

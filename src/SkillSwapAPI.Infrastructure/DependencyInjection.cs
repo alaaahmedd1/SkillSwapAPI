@@ -54,7 +54,7 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException(
                 "Identity settings are not configured.");
 
-        services.AddIdentity<AppUser, IdentityRole>(options =>
+        services.AddIdentity<AppUser, IdentityRole<Guid>>(options =>
         {
             options.Password.RequireDigit =
                 identitySettings.Password.RequireDigit;
