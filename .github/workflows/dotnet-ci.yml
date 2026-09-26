@@ -20,10 +20,10 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore dependencies
-        run: dotnet restore SkillSwapAPI.slnx
+        run: dotnet restore SkillSwapAPI.sln
 
       - name: Build
-        run: dotnet build SkillSwapAPI.slnx --no-restore --configuration Release
+        run: dotnet build SkillSwapAPI.sln --no-restore --configuration Release
 
       - name: Test
-        run: dotnet test SkillSwapAPI.slnx --no-build --configuration Release --verbosity normal
+        run: dotnet test SkillSwapAPI.sln --no-build --configuration Release --verbosity normal
