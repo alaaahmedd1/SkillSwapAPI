@@ -1,0 +1,111 @@
+/GEMINI.md
+
+# ==========================================
+# Visual Studio
+# ==========================================
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
+*.sln.ide
+
+# ==========================================
+# .NET Build Outputs
+# ==========================================
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa]rtifacts/
+[Tt]est[Rr]esults/
+*.trx
+*.coverage
+*.coveragexml
+
+# ==========================================
+# NuGet
+# ==========================================
+*.nupkg
+*.snupkg
+.nuget/
+
+# ==========================================
+# User-specific IDE files
+# ==========================================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ==========================================
+# Secrets and Environment Variables
+# ==========================================
+.env
+.env.*
+!.env.example
+!.env.template
+
+# ASP.NET Core User Secrets
+secrets.json
+
+# Private keys and certificates
+*.pfx
+*.p12
+*.key
+*.pem
+*.crt
+*.cer
+
+# ==========================================
+# Logs and Temporary Files
+# ==========================================
+*.log
+logs/
+Log/
+Temp/
+tmp/
+*.tmp
+*.temp
+*.bak
+*.old
+
+# ==========================================
+# Operating System
+# ==========================================
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ==========================================
+# Database Local Files
+# ==========================================
+*.mdf
+*.ldf
+*.sqlite
+*.sqlite3
+*.db
+
+# ==========================================
+# Coverage and Test Reports
+# ==========================================
+coverage/
+coverage-report/
+.coverage/
+BenchmarkDotNet.Artifacts/
+
+# ==========================================
+# Docker Local Overrides
+# ==========================================
+docker-compose.override.yml
+
+# ==========================================
+# Publish Outputs
+# ==========================================
+publish/
+Published/
