@@ -1,5 +1,8 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using SkillSwapAPI.Application.Features.Identity.Dtos;
+using SkillSwapAPI.Domain.Common.Results;
 using SkillSwapAPI.Domain.Identity;
 
 namespace SkillSwapAPI.Infrastructure.Persistence.Data.Configurations.Identity;
@@ -19,6 +22,10 @@ public sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<Refresh
         builder.Property(rt => rt.UserId)
             .IsRequired()
             .HasMaxLength(450);
+
+        builder.Property(rt => rt.IsRevoked)
+            .IsRequired()
+            .HasDefaultValue(false);
 
         builder.HasIndex(rt => rt.Token)
             .IsUnique();

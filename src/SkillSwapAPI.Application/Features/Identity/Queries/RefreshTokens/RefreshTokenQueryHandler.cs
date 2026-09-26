@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using SkillSwapAPI.Application.Common.Errors;
 using SkillSwapAPI.Application.Common.Interfaces;
 using SkillSwapAPI.Application.Common.Interfaces.Identity;
+using SkillSwapAPI.Application.Common.Security;
 using SkillSwapAPI.Domain.Common.Results;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -36,16 +37,35 @@ public sealed class RefreshTokenQueryHandler(
             return ApplicationErrors.Token.UserIdClaimInvalid;
         }
 
+        var refreshTokenHash = RefreshTokenHasher.Hash(query.RefreshToken);
         var refreshToken = await context.RefreshTokens
-            .FirstOrDefaultAsync(r => r.Token == query.RefreshToken && r.UserId == userId, ct);
+            .FirstOrDefaultAsync(r => r.Token == refreshTokenHash && r.UserId == userId, ct);
 
-        if (refreshToken is null || refreshToken.ExpiresOnUtc < DateTimeOffset.UtcNow)
+        if (refreshToken is null)
         {
             logger.LogError("Refresh token expired or not found for user {UserId}", userId);
             return ApplicationErrors.Token.RefreshTokenExpired;
         }
 
-        context.RefreshTokens.Remove(refreshToken);
+        if (refreshToken.IsRevoked)
+        {
+            await context.RefreshTokens
+                .Where(token => token.UserId == userId && !token.IsRevoked)
+                .ExecuteUpdateAsync(
+                    setters => setters.SetProperty(token => token.IsRevoked, true),
+                    ct);
+
+            logger.LogWarning("SECURITY: refresh token reuse detected for user {UserId}; all active refresh tokens revoked", userId);
+            return ApplicationErrors.Token.RefreshTokenReused;
+        }
+
+        if (refreshToken.ExpiresOnUtc < DateTimeOffset.UtcNow)
+        {
+            logger.LogError("Refresh token expired for user {UserId}", userId);
+            return ApplicationErrors.Token.RefreshTokenExpired;
+        }
+
+        refreshToken.IsRevoked = true;
         await context.SaveChangesAsync(ct);
 
         var userResult = await identityService.GetUserByIdAsync(userId, ct);

@@ -10,7 +10,7 @@ public class RegisterCommandValidatorTests
     [Fact]
     public void Validate_ShouldPass_WhenEmailAndPasswordAreValid()
     {
-        var command = new RegisterCommand("user@example.com", "SecurePassword123!");
+        var command = new RegisterCommand("Test", "User", "user@example.com", "SecurePassword123!");
         var result = _validator.Validate(command);
         Assert.True(result.IsValid);
     }
@@ -22,8 +22,34 @@ public class RegisterCommandValidatorTests
     [InlineData("user@example.com", "123")]
     public void Validate_ShouldFail_WhenInputsAreInvalid(string email, string password)
     {
-        var command = new RegisterCommand(email, password);
+        var command = new RegisterCommand("Test", "User", email, password);
         var result = _validator.Validate(command);
+        Assert.False(result.IsValid);
+    }
+
+    [Theory]
+    [InlineData("", "User")]
+    [InlineData("Test", "")]
+    [InlineData("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", "User")]
+    [InlineData("Test", "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz")]
+    public void Validate_ShouldFail_WhenNameIsMissingOrTooLong(string firstName, string lastName)
+    {
+        var command = new RegisterCommand(firstName, lastName, "user@example.com", "SecurePassword123!");
+        var result = _validator.Validate(command);
+
+        Assert.False(result.IsValid);
+    }
+
+    [Theory]
+    [InlineData("short1!")]
+    [InlineData("lowercase1!")]
+    [InlineData("NoDigits!")]
+    [InlineData("NoSpecial1")]
+    public void Validate_ShouldFail_WhenPasswordDoesNotMeetSecurityPolicy(string password)
+    {
+        var command = new RegisterCommand("Test", "User", "user@example.com", password);
+        var result = _validator.Validate(command);
+
         Assert.False(result.IsValid);
     }
 }

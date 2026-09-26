@@ -7,9 +7,7 @@ namespace SkillSwapAPI.API.Controllers.Identity;
 [Route("api/[controller]")]
 public class GuestFeedController : ApiBaseController
 {
-    /// <summary>
-    /// UC-06: Guest Browsing (Unauthenticated, Read-only, No PII or Wallet Data Exposed)
-    /// </summary>
+
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> GetListings([FromQuery] GetGuestListingsQuery query, CancellationToken ct)

@@ -15,9 +15,7 @@ namespace SkillSwapAPI.API.Controllers.Identity;
 [Route("api/[controller]")]
 public class AuthController : ApiBaseController
 {
-    /// <summary>
-    /// UC-01: Register New Account
-    /// </summary>
+
     [HttpPost("register")]
     [AllowAnonymous]
     public async Task<IActionResult> Register([FromBody] RegisterCommand command, CancellationToken ct)
@@ -26,9 +24,6 @@ public class AuthController : ApiBaseController
         return HandleResult(result);
     }
 
-    /// <summary>
-    /// UC-02: Authenticate & Login
-    /// </summary>
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginCommand command, CancellationToken ct)
@@ -37,9 +32,6 @@ public class AuthController : ApiBaseController
         return HandleResult(result);
     }
 
-    /// <summary>
-    /// UC-01: Social Auth Login (Google, Facebook, Apple)
-    /// </summary>
     [HttpPost("social-login")]
     [AllowAnonymous]
     public async Task<IActionResult> SocialLogin([FromBody] SocialLoginCommand command, CancellationToken ct)
@@ -48,9 +40,6 @@ public class AuthController : ApiBaseController
         return HandleResult(result);
     }
 
-    /// <summary>
-    /// UC-02: Refresh Access Token
-    /// </summary>
     [HttpPost("refresh-token")]
     [AllowAnonymous]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenQuery query, CancellationToken ct)
@@ -59,9 +48,7 @@ public class AuthController : ApiBaseController
         return HandleResult(result);
     }
 
-    /// <summary>
-    /// UC-03: Request Password Reset OTP
-    /// </summary>
+
     [HttpPost("forgot-password")]
     [AllowAnonymous]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordCommand command, CancellationToken ct)
@@ -70,9 +57,7 @@ public class AuthController : ApiBaseController
         return HandleResult(result);
     }
 
-    /// <summary>
-    /// UC-04: Verify OTP Code
-    /// </summary>
+
     [HttpPost("verify-otp")]
     [AllowAnonymous]
     public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpCommand command, CancellationToken ct)
@@ -81,9 +66,6 @@ public class AuthController : ApiBaseController
         return HandleResult(result);
     }
 
-    /// <summary>
-    /// UC-05: Reset Password
-    /// </summary>
     [HttpPost("reset-password")]
     [AllowAnonymous]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordCommand command, CancellationToken ct)
@@ -92,9 +74,7 @@ public class AuthController : ApiBaseController
         return HandleResult(result);
     }
 
-    /// <summary>
-    /// UC-07: Logout & Token Revocation
-    /// </summary>
+
     [HttpPost("logout")]
     [Authorize]
     public async Task<IActionResult> Logout([FromBody] LogoutRequest request, CancellationToken ct)

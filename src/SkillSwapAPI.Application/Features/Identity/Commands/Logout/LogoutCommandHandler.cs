@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SkillSwapAPI.Application.Common.Interfaces;
+using SkillSwapAPI.Application.Common.Security;
 using SkillSwapAPI.Domain.Common.Results;
 
 namespace SkillSwapAPI.Application.Features.Identity.Commands.Logout;
@@ -13,14 +14,15 @@ public sealed class LogoutCommandHandler(
 {
     public async Task<Result<Success>> Handle(LogoutCommand command, CancellationToken ct)
     {
-        var tokens = await context.RefreshTokens
-            .Where(rt => rt.UserId == command.UserId && rt.Token == command.RefreshToken)
-            .ToListAsync(ct);
+        var refreshTokenHash = RefreshTokenHasher.Hash(command.RefreshToken);
+        var revokedCount = await context.RefreshTokens
+            .Where(rt => rt.UserId == command.UserId && rt.Token == refreshTokenHash && !rt.IsRevoked)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(token => token.IsRevoked, true),
+                ct);
 
-        if (tokens.Count > 0)
+        if (revokedCount > 0)
         {
-            context.RefreshTokens.RemoveRange(tokens);
-            await context.SaveChangesAsync(ct);
             logger.LogInformation("Refresh token revoked for user {UserId}", command.UserId);
         }
 

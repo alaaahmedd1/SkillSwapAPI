@@ -32,7 +32,12 @@ public sealed class LoginCommandHandler(
             tokenResult.Value.AccessToken,
             tokenResult.Value.RefreshToken,
             tokenResult.Value.ExpiresOnUtc,
-            new UserDto(authResult.Value.UserId, authResult.Value.Email, null)
+            new UserDto(
+                authResult.Value.UserId,
+                authResult.Value.Email,
+                authResult.Value.FirstName,
+                authResult.Value.LastName,
+                null)
         );
     }
 }

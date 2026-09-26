@@ -49,7 +49,12 @@ public sealed class SocialLoginCommandHandler(
             tokenResult.Value.AccessToken,
             tokenResult.Value.RefreshToken,
             tokenResult.Value.ExpiresOnUtc,
-            new UserDto(appUserResult.Value.UserId, appUserResult.Value.Email, verifyResult.Value.FullName)
+            new UserDto(
+                appUserResult.Value.UserId,
+                appUserResult.Value.Email,
+                appUserResult.Value.FirstName,
+                appUserResult.Value.LastName,
+                null)
         );
     }
 }

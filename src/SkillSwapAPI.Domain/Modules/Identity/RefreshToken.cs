@@ -9,6 +9,7 @@ public sealed class RefreshToken : AuditableEntity
     public string? Token { get; }
     public string? UserId { get; }
     public DateTimeOffset ExpiresOnUtc { get; }
+    public bool IsRevoked { get; set; }
 
     private RefreshToken()
     { }
@@ -19,6 +20,7 @@ public sealed class RefreshToken : AuditableEntity
         Token = token;
         UserId = userId;
         ExpiresOnUtc = expiresOnUtc;
+        IsRevoked = false;
     }
 
     public static Result<RefreshToken> Create(Guid id, string? token, string? userId, DateTimeOffset expiresOnUtc)

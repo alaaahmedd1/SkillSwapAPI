@@ -15,6 +15,9 @@ public static class ApplicationErrors
         public static Error RefreshTokenExpired =>
             Error.Unauthorized("Token.RefreshTokenExpired", "Refresh token has expired or does not exist.");
 
+        public static Error RefreshTokenReused =>
+            Error.Unauthorized("Token.RefreshTokenReused", "Refresh token reuse was detected. Please sign in again.");
+
         public static Error GenerationFailed =>
             Error.Unexpected("Token.GenerationFailed", "An error occurred while generating the token.");
     }
@@ -76,5 +79,17 @@ public static class ApplicationErrors
             Error.Unexpected(
                 "SocialAuth.TokenVerificationFailed",
                 "An error occurred while verifying the social token.");
+    }
+
+    public static class Skills
+    {
+        public static readonly Error DuplicateSkillType =
+            Error.Validation("Skills.DuplicateType", "This skill is already listed as the opposite type (Offered/Seeking) for this user.");
+        public static readonly Error SkillNotFound =
+            Error.Validation("Skills.NotFound", "The specified skill does not exist.");
+        public static readonly Error UserSkillNotFound =
+            Error.Validation("Skills.UserSkillNotFound", "The specified user skill entry was not found.");
+        public static readonly Error UserSkillNotOwned =
+            Error.Validation("Skills.NotOwned", "You do not have permission to modify this skill entry.");
     }
 }

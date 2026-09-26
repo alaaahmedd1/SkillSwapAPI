@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SkillSwapAPI.Domain.Common.Results;
+using System.Security.Claims;
 
 namespace SkillSwapAPI.API.Controllers;
 
@@ -28,5 +29,11 @@ public abstract class ApiBaseController : ControllerBase
             ErrorKind.Unauthorized => Unauthorized(new { code = error.Code, message = error.Description }),
             _ => StatusCode(StatusCodes.Status500InternalServerError, new { code = error.Code, message = error.Description })
         };
+    }
+
+    protected bool TryGetCurrentUserId(out Guid userId)
+    {
+        var value = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        return Guid.TryParse(value, out userId);
     }
 }

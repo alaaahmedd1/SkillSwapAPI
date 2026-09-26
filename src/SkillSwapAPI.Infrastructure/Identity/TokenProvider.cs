@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SkillSwapAPI.Application.Common.Interfaces;
 using SkillSwapAPI.Application.Common.Interfaces.Identity;
+using SkillSwapAPI.Application.Common.Security;
 using SkillSwapAPI.Application.Features.Identity;
 using SkillSwapAPI.Application.Features.Identity.Dtos;
 using SkillSwapAPI.Domain.Common.Results;
@@ -30,8 +31,8 @@ public sealed class TokenProvider(
 
         var claims = new List<Claim>
         {
-            new(ClaimTypes.NameIdentifier, user.UserId),
-            new(JwtRegisteredClaimNames.Sub, user.UserId),
+            new(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+            new(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
@@ -66,14 +67,12 @@ public sealed class TokenProvider(
         var securityToken = tokenHandler.CreateToken(descriptor);
         var accessToken = tokenHandler.WriteToken(securityToken);
 
-        await context.RefreshTokens
-            .Where(rt => rt.UserId == user.UserId)
-            .ExecuteDeleteAsync(ct);
+        var refreshToken = GenerateRefreshToken();
 
         var refreshTokenResult = RefreshToken.Create(
             Guid.NewGuid(),
-            GenerateRefreshToken(),
-            user.UserId,
+            RefreshTokenHasher.Hash(refreshToken),
+            user.UserId.ToString(),
             DateTimeOffset.UtcNow.AddDays(_jwtSettings.RefreshExpiryDays));
 
         if (!refreshTokenResult.IsSuccess)
@@ -88,7 +87,7 @@ public sealed class TokenProvider(
 
         return new TokenResponse(
             accessToken,
-            refreshTokenResult.Value.Token!,
+            refreshToken,
             expires
         );
     }
