@@ -23,4 +23,8 @@
     <ProjectReference Include="..\SkillSwapAPI.Application\SkillSwapAPI.Application.csproj" />
     <ProjectReference Include="..\SkillSwapAPI.Domain\SkillSwapAPI.Domain.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Persistence\Repositories\" />
+  </ItemGroup>
 </Project>

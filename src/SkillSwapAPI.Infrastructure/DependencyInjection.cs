@@ -4,13 +4,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using SkillSwapAPI.Application.Common.Interfaces;
 using SkillSwapAPI.Application.Common.Interfaces.Identity;
 using SkillSwapAPI.Application.Common.Interfaces.Notifications;
 using SkillSwapAPI.Application.Common.Interfaces.Services;
 using SkillSwapAPI.Application.Common.Settings;
 using SkillSwapAPI.Infrastructure.Identity;
-using SkillSwapAPI.Infrastructure.Persistence.Data.NewFolder;
+using SkillSwapAPI.Infrastructure.Persistence.Data.DbContext;
 using SkillSwapAPI.Infrastructure.Services;
 using SkillSwapAPI.Infrastructure.Settings;
 
@@ -20,30 +21,61 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
-        services.Configure<OtpSettings>(configuration.GetSection("Otp"));
-        services.Configure<SocialAuthSettings>(configuration.GetSection("SocialAuth"));
-        services.Configure<GmailSettings>(configuration.GetSection("Gmail"));
+        services.Configure<JwtSettings>(
+            configuration.GetRequiredSection(JwtSettings.SectionName));
 
-        var connectionString = configuration.GetConnectionString("DefaultConnection") 
-            ?? "Server=(localdb)\\mssqllocaldb;Database=SkillSwapDb;Trusted_Connection=True;MultipleActiveResultSets=true";
+        services.Configure<OtpSettings>(
+            configuration.GetRequiredSection(OtpSettings.SectionName));
+
+        services.Configure<SocialAuthSettings>(
+            configuration.GetRequiredSection(SocialAuthSettings.SectionName));
+
+        services.Configure<GmailSettings>(
+            configuration.GetRequiredSection(GmailSettings.SectionName));
+
+        services.Configure<IdentitySettings>(
+            configuration.GetRequiredSection(IdentitySettings.SectionName));
+
+        var connectionString =
+            configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException(
+                "ConnectionStrings:DefaultConnection is not configured.");
 
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(connectionString));
 
-        services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+        services.AddScoped<IApplicationDbContext>(
+            provider => provider.GetRequiredService<ApplicationDbContext>());
+
+        var identitySettings =
+            configuration
+                .GetRequiredSection(IdentitySettings.SectionName)
+                .Get<IdentitySettings>()
+            ?? throw new InvalidOperationException(
+                "Identity settings are not configured.");
 
         services.AddIdentity<AppUser, IdentityRole>(options =>
-            {
-                options.Password.RequireDigit = false;
-                options.Password.RequireLowercase = false;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequiredLength = 6;
-                options.User.RequireUniqueEmail = true;
-            })
-            .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddDefaultTokenProviders();
+        {
+            options.Password.RequireDigit =
+                identitySettings.Password.RequireDigit;
+
+            options.Password.RequireLowercase =
+                identitySettings.Password.RequireLowercase;
+
+            options.Password.RequireNonAlphanumeric =
+                identitySettings.Password.RequireNonAlphanumeric;
+
+            options.Password.RequireUppercase =
+                identitySettings.Password.RequireUppercase;
+
+            options.Password.RequiredLength =
+                identitySettings.Password.RequiredLength;
+
+            options.User.RequireUniqueEmail =
+                identitySettings.User.RequireUniqueEmail;
+        })
+        .AddEntityFrameworkStores<ApplicationDbContext>()
+        .AddDefaultTokenProviders();
 
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<ITokenProvider, TokenProvider>();
@@ -52,22 +84,37 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, GmailEmailService>();
         services.AddScoped<IEmailTempService, EmailTemplateService>();
 
-        services.AddHttpClient("Facebook", client =>
+        services.AddHttpClient("Facebook", (serviceProvider, client) =>
         {
-            client.BaseAddress = new Uri("https://graph.facebook.com/v19.0/");
+            var settings =
+                serviceProvider
+                    .GetRequiredService<IOptions<SocialAuthSettings>>()
+                    .Value;
+
+            client.BaseAddress = new Uri(settings.Facebook.BaseUrl);
         });
-        services.AddHttpClient("Apple", client =>
+
+        services.AddHttpClient("Apple", (serviceProvider, client) =>
         {
-            client.BaseAddress = new Uri("https://appleid.apple.com/");
+            var settings =
+                serviceProvider
+                    .GetRequiredService<IOptions<SocialAuthSettings>>()
+                    .Value;
+
+            client.BaseAddress = new Uri(settings.Apple.BaseUrl);
         });
+
         services.AddCachingServices(configuration);
 
         return services;
     }
 
-    private static void AddCachingServices(this IServiceCollection services, IConfiguration configuration)
+    private static void AddCachingServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        var redisConnection = configuration.GetConnectionString("Redis");
+        var redisConnection =
+            configuration.GetConnectionString("Redis");
 
         if (!string.IsNullOrWhiteSpace(redisConnection))
         {
