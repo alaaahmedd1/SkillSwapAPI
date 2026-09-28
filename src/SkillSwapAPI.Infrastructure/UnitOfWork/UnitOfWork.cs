@@ -21,6 +21,7 @@ namespace SkillSwapAPI.Infrastructure.UnitOfWork
             Messages = new MessageRepository(_context);
             Reviews = new ReviewRepository(_context);
             AuditLogs = new AuditLogRepository(_context);
+            TimeWallets = new TimeWalletRepository(_context);
         }
         public IRefreshTokenRepository RefreshTokens { get; private set; }
         public ISkillCategoryRepository SkillCategories { get; private set; }
@@ -31,7 +32,7 @@ namespace SkillSwapAPI.Infrastructure.UnitOfWork
         public IMessageRepository Messages { get; private set; }
         public IReviewRepository Reviews { get; private set; }
         public IAuditLogRepository AuditLogs { get; private set; }
-
+        public ITimeWalletRepository TimeWallets { get; }
 
         public async Task<int> CompleteAsync(CancellationToken cancellationToken = default)
         {
