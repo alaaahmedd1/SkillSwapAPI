@@ -92,4 +92,20 @@ public static class ApplicationErrors
         public static readonly Error UserSkillNotOwned =
             Error.Validation("Skills.NotOwned", "You do not have permission to modify this skill entry.");
     }
+
+    public static class SwapRequests
+    {
+        public static readonly Error NotFound =
+            Error.NotFound("SwapRequests.NotFound", "The swap request was not found.");
+        public static readonly Error InvalidStatusTransition =
+            Error.Conflict("SwapRequests.InvalidStatusTransition", "The swap request status does not allow this action.");
+        public static readonly Error OnlyReceiverCanRespond =
+            Error.Forbidden("SwapRequests.OnlyReceiverCanRespond", "Only the receiver can accept or reject this swap request.");
+        public static readonly Error OnlyRequesterCanCancel =
+            Error.Forbidden("SwapRequests.OnlyRequesterCanCancel", "Only the requester can cancel a pending swap request. The receiver must reject it instead.");
+        public static readonly Error NotParticipant =
+            Error.Forbidden("SwapRequests.NotParticipant", "You are not a participant in this swap request.");
+        public static readonly Error ConcurrencyConflict =
+            Error.Conflict("SwapRequests.ConcurrencyConflict", "The swap request was modified by another request. Please retry.");
+    }
 }

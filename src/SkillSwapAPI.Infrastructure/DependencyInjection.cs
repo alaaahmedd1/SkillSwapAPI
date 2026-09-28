@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using SkillSwapAPI.Application.Common.Interfaces;
 using SkillSwapAPI.Application.Common.Interfaces.Identity;
 using SkillSwapAPI.Application.Common.Interfaces.Notifications;
 using SkillSwapAPI.Application.Common.Interfaces.Services;
+using SkillSwapAPI.Application.Common.Interfaces.UnitOfWork;
 using SkillSwapAPI.Application.Common.Settings;
 using SkillSwapAPI.Infrastructure.Identity;
 using SkillSwapAPI.Infrastructure.Persistence.Data.DbContext;
@@ -44,8 +44,7 @@ public static class DependencyInjection
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(connectionString));
 
-        services.AddScoped<IApplicationDbContext>(
-            provider => provider.GetRequiredService<ApplicationDbContext>());
+        services.AddScoped<IUnitOfWork, SkillSwapAPI.Infrastructure.UnitOfWork.UnitOfWork>();
 
         var identitySettings =
             configuration

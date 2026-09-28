@@ -1,26 +1,23 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using SkillSwapAPI.Application.Common.Errors;
-using SkillSwapAPI.Application.Common.Interfaces;
+using SkillSwapAPI.Application.Common.Interfaces.UnitOfWork;
 using SkillSwapAPI.Domain.Common.Results;
 
 namespace SkillSwapAPI.Application.Features.Users.Commands.RemoveUserSkill;
 
-public sealed class RemoveUserSkillCommandHandler(IApplicationDbContext context)
+public sealed class RemoveUserSkillCommandHandler(IUnitOfWork unitOfWork)
     : IRequestHandler<RemoveUserSkillCommand, Result<Deleted>>
 {
     public async Task<Result<Deleted>> Handle(RemoveUserSkillCommand command, CancellationToken ct)
     {
-        var userSkill = await context.UserSkills.SingleOrDefaultAsync(
-            item => item.Id == command.UserSkillId && item.UserId == command.UserId,
-            ct);
+        var userSkill = await unitOfWork.UserSkills.GetByIdAndUserAsync(command.UserSkillId, command.UserId, ct);
         if (userSkill is null)
         {
             return ApplicationErrors.Skills.UserSkillNotFound;
         }
 
-        context.UserSkills.Remove(userSkill);
-        await context.SaveChangesAsync(ct);
+        unitOfWork.UserSkills.Delete(userSkill);
+        await unitOfWork.CompleteAsync(ct);
         return Result.Deleted;
     }
 }

@@ -1,8 +1,7 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using SkillSwapAPI.Application.Common.Interfaces;
 using SkillSwapAPI.Application.Common.Interfaces.Identity;
+using SkillSwapAPI.Application.Common.Interfaces.UnitOfWork;
 using SkillSwapAPI.Application.Common.Security;
 using SkillSwapAPI.Application.Features.Identity;
 using SkillSwapAPI.Application.Features.Identity.Dtos;
@@ -18,7 +17,7 @@ namespace SkillSwapAPI.Infrastructure.Identity;
 
 public sealed class TokenProvider(
     IOptions<JwtSettings> jwtOptions,
-    IApplicationDbContext context)
+    IUnitOfWork unitOfWork)
     : ITokenProvider
 {
     private readonly JwtSettings _jwtSettings = jwtOptions.Value;
@@ -82,8 +81,8 @@ public sealed class TokenProvider(
                 "An error occurred while generating the token.");
         }
 
-        context.RefreshTokens.Add(refreshTokenResult.Value);
-        await context.SaveChangesAsync(ct);
+        await unitOfWork.RefreshTokens.AddAsync(refreshTokenResult.Value, ct);
+        await unitOfWork.CompleteAsync(ct);
 
         return new TokenResponse(
             accessToken,

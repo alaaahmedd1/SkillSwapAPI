@@ -1,28 +1,28 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SkillSwapAPI.Application.Common.Interfaces;
+using SkillSwapAPI.Application.Common.Interfaces.UnitOfWork;
 using SkillSwapAPI.Application.Common.Security;
 using SkillSwapAPI.Domain.Common.Results;
 
 namespace SkillSwapAPI.Application.Features.Identity.Commands.Logout;
 
 public sealed class LogoutCommandHandler(
-    IApplicationDbContext context,
+    IUnitOfWork unitOfWork,
     ILogger<LogoutCommandHandler> logger)
     : IRequestHandler<LogoutCommand, Result<Success>>
 {
     public async Task<Result<Success>> Handle(LogoutCommand command, CancellationToken ct)
     {
         var refreshTokenHash = RefreshTokenHasher.Hash(command.RefreshToken);
-        var revokedCount = await context.RefreshTokens
-            .Where(rt => rt.UserId == command.UserId && rt.Token == refreshTokenHash && !rt.IsRevoked)
-            .ExecuteUpdateAsync(
-                setters => setters.SetProperty(token => token.IsRevoked, true),
-                ct);
+        var refreshToken = await unitOfWork.RefreshTokens.GetActiveByUserAndTokenAsync(command.UserId, refreshTokenHash, ct);
 
-        if (revokedCount > 0)
+        if (refreshToken is not null)
         {
+            refreshToken.IsRevoked = true;
+
+            unitOfWork.RefreshTokens.Update(refreshToken);
+            await unitOfWork.CompleteAsync(ct);
+
             logger.LogInformation("Refresh token revoked for user {UserId}", command.UserId);
         }
 

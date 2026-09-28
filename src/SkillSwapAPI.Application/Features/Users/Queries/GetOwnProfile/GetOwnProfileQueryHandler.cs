@@ -1,14 +1,13 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using SkillSwapAPI.Application.Common.Interfaces;
 using SkillSwapAPI.Application.Common.Interfaces.Identity;
+using SkillSwapAPI.Application.Common.Interfaces.UnitOfWork;
 using SkillSwapAPI.Application.Features.Users.Dtos;
 using SkillSwapAPI.Domain.Common.Results;
 
 namespace SkillSwapAPI.Application.Features.Users.Queries.GetOwnProfile;
 
 public sealed class GetOwnProfileQueryHandler(
-    IApplicationDbContext context,
+    IUnitOfWork unitOfWork,
     IIdentityService identityService)
     : IRequestHandler<GetOwnProfileQuery, Result<ProfileDto>>
 {
@@ -20,10 +19,9 @@ public sealed class GetOwnProfileQueryHandler(
             return userResult.Errors;
         }
 
-        var skills = await context.UserSkills
-            .AsNoTracking()
-            .Where(userSkill => userSkill.UserId == query.UserId)
-            .OrderBy(userSkill => userSkill.Skill.Name)
+        var userSkills = await unitOfWork.UserSkills.GetByUserAsync(query.UserId, ct);
+
+        var skills = userSkills
             .Select(userSkill => new UserSkillDto(
                 userSkill.Id,
                 userSkill.SkillId,
@@ -32,7 +30,7 @@ public sealed class GetOwnProfileQueryHandler(
                 userSkill.Type,
                 userSkill.ProficiencyLevel,
                 userSkill.YearsOfExperience))
-            .ToListAsync(ct);
+            .ToList();
 
         return new ProfileDto(
             query.UserId,

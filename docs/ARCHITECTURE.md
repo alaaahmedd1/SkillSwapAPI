@@ -99,7 +99,8 @@ Orchestrates use cases using CQRS pattern with MediatR.
 
 **Common Interfaces:**
 - `ICurrentUserService` — Current authenticated user abstraction
-- `IApplicationDbContext` — Database context abstraction
+- `IUnitOfWork` / `IBaseRepository<T>` — Unit of Work and generic repository abstractions
+- Dedicated repositories (`ISwapRequestRepository`, `IUserSkillRepository`, `ISkillRepository`, `ISkillCategoryRepository`, `IRefreshTokenRepository`) — Purpose-built query methods extending `IBaseRepository<T>`; handlers call one repo method instead of writing queries inline
 - `IJwtProvider` — JWT token generation/validation
 - `IEmailService` — Email sending abstraction
 - `ICacheService` — Distributed cache abstraction
