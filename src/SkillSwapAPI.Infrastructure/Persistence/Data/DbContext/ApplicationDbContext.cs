@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using SkillSwapAPI.Domain.Identity;
 using SkillSwapAPI.Domain.Skills.Entities;
 using SkillSwapAPI.Domain.Modules.Chat.Entities;
+using SkillSwapAPI.Domain.Modules.Reviews.Entities;
 using SkillSwapAPI.Domain.Modules.SwapRequests.Entities;
 using SkillSwapAPI.Domain.Modules.Users.Entities;
 using SkillSwapAPI.Infrastructure.Identity;
@@ -25,6 +26,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<SwapRequest> SwapRequests => Set<SwapRequest>();
     public DbSet<Conversation> Conversations => Set<Conversation>();
     public DbSet<Message> Messages => Set<Message>();
+    public DbSet<Review> Reviews => Set<Review>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

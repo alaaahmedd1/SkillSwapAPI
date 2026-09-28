@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SkillSwapAPI.Application.Features.Reviews.Queries.GetUserReviews;
 using SkillSwapAPI.Application.Features.Users.Queries.SearchUsers;
 
 namespace SkillSwapAPI.API.Controllers.Users;
@@ -13,4 +14,15 @@ public sealed class UsersController : ApiBaseController
     {
         return HandleResult(await Mediator.Send(query, ct));
     }
+
+    [HttpGet("{userId:guid}/reviews")]
+    public async Task<IActionResult> GetUserReviews(Guid userId, [FromQuery] GetUserReviewsRequest request, CancellationToken ct)
+    {
+        return HandleResult(await Mediator.Send(
+            new GetUserReviewsQuery(userId, request.PageNumber, request.PageSize), ct));
+    }
 }
+
+public sealed record GetUserReviewsRequest(
+    int PageNumber = 1,
+    int PageSize = 10);
