@@ -1,33 +1,26 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using SkillSwapAPI.Application.Common.Errors;
-using SkillSwapAPI.Application.Common.Interfaces;
+using SkillSwapAPI.Application.Common.Interfaces.UnitOfWork;
 using SkillSwapAPI.Application.Features.Users.Dtos;
 using SkillSwapAPI.Domain.Common.Results;
 using SkillSwapAPI.Domain.Modules.Users.Entities;
 
 namespace SkillSwapAPI.Application.Features.Users.Commands.AddUserSkill;
 
-public sealed class AddUserSkillCommandHandler(IApplicationDbContext context)
+public sealed class AddUserSkillCommandHandler(IUnitOfWork unitOfWork)
     : IRequestHandler<AddUserSkillCommand, Result<UserSkillDto>>
 {
     public async Task<Result<UserSkillDto>> Handle(AddUserSkillCommand command, CancellationToken ct)
     {
-        var skill = await context.Skills
-            .AsNoTracking()
-            .Include(item => item.Category)
-            .SingleOrDefaultAsync(item => item.Id == command.SkillId, ct);
+        var skill = await unitOfWork.Skills.GetWithCategoryAsync(command.SkillId, ct);
         if (skill is null)
         {
             return ApplicationErrors.Skills.SkillNotFound;
         }
 
-        var oppositeTypeExists = await context.UserSkills.AnyAsync(
-            item => item.UserId == command.UserId
-                && item.SkillId == command.SkillId
-                && item.Type != command.Type,
-            ct);
-        if (oppositeTypeExists)
+        var hasOppositeType = await unitOfWork.UserSkills.HasSkillWithDifferentTypeAsync(
+            command.UserId, command.SkillId, command.Type, ct);
+        if (hasOppositeType)
         {
             return ApplicationErrors.Skills.DuplicateSkillType;
         }
@@ -42,8 +35,8 @@ public sealed class AddUserSkillCommandHandler(IApplicationDbContext context)
             YearsOfExperience = command.YearsOfExperience
         };
 
-        context.UserSkills.Add(userSkill);
-        await context.SaveChangesAsync(ct);
+        await unitOfWork.UserSkills.AddAsync(userSkill, ct);
+        await unitOfWork.CompleteAsync(ct);
 
         return new UserSkillDto(
             userSkill.Id,

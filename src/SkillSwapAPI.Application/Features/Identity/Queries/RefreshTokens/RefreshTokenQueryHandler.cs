@@ -1,9 +1,8 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SkillSwapAPI.Application.Common.Errors;
-using SkillSwapAPI.Application.Common.Interfaces;
 using SkillSwapAPI.Application.Common.Interfaces.Identity;
+using SkillSwapAPI.Application.Common.Interfaces.UnitOfWork;
 using SkillSwapAPI.Application.Common.Security;
 using SkillSwapAPI.Domain.Common.Results;
 using System.IdentityModel.Tokens.Jwt;
@@ -14,7 +13,7 @@ namespace SkillSwapAPI.Application.Features.Identity.Queries.RefreshTokens;
 public sealed class RefreshTokenQueryHandler(
     ITokenProvider tokenProvider,
     IIdentityService identityService,
-    IApplicationDbContext context,
+    IUnitOfWork unitOfWork,
     ILogger<RefreshTokenQueryHandler> logger)
     : IRequestHandler<RefreshTokenQuery, Result<TokenResponse>>
 {
@@ -38,8 +37,7 @@ public sealed class RefreshTokenQueryHandler(
         }
 
         var refreshTokenHash = RefreshTokenHasher.Hash(query.RefreshToken);
-        var refreshToken = await context.RefreshTokens
-            .FirstOrDefaultAsync(r => r.Token == refreshTokenHash && r.UserId == userId, ct);
+        var refreshToken = await unitOfWork.RefreshTokens.GetByUserAndTokenAsync(userId, refreshTokenHash, ct);
 
         if (refreshToken is null)
         {
@@ -49,11 +47,15 @@ public sealed class RefreshTokenQueryHandler(
 
         if (refreshToken.IsRevoked)
         {
-            await context.RefreshTokens
-                .Where(token => token.UserId == userId && !token.IsRevoked)
-                .ExecuteUpdateAsync(
-                    setters => setters.SetProperty(token => token.IsRevoked, true),
-                    ct);
+            var activeTokens = await unitOfWork.RefreshTokens.GetActiveByUserAsync(userId, ct);
+
+            foreach (var activeToken in activeTokens)
+            {
+                activeToken.IsRevoked = true;
+            }
+
+            unitOfWork.RefreshTokens.UpdateRange(activeTokens);
+            await unitOfWork.CompleteAsync(ct);
 
             logger.LogWarning("SECURITY: refresh token reuse detected for user {UserId}; all active refresh tokens revoked", userId);
             return ApplicationErrors.Token.RefreshTokenReused;
@@ -66,7 +68,9 @@ public sealed class RefreshTokenQueryHandler(
         }
 
         refreshToken.IsRevoked = true;
-        await context.SaveChangesAsync(ct);
+
+        unitOfWork.RefreshTokens.Update(refreshToken);
+        await unitOfWork.CompleteAsync(ct);
 
         var userResult = await identityService.GetUserByIdAsync(userId, ct);
         if (userResult.IsError)

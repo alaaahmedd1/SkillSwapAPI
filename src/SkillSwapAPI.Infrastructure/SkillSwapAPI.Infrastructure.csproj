@@ -5,6 +5,11 @@
     <Nullable>enable</Nullable>
     <RootNamespace>SkillSwapAPI.Infrastructure</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Persistence\Repositories\**" />
+    <EmbeddedResource Remove="Persistence\Repositories\**" />
+    <None Remove="Persistence\Repositories\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Google.Apis.Auth" Version="1.69.0" />
@@ -22,9 +27,5 @@
   <ItemGroup>
     <ProjectReference Include="..\SkillSwapAPI.Application\SkillSwapAPI.Application.csproj" />
     <ProjectReference Include="..\SkillSwapAPI.Domain\SkillSwapAPI.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Persistence\Repositories\" />
   </ItemGroup>
 </Project>

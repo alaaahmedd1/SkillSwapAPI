@@ -1,20 +1,16 @@
 using MediatR;
-using SkillSwapAPI.Application.Common.Interfaces;
 using SkillSwapAPI.Application.Common.Models;
 using SkillSwapAPI.Domain.Common.Results;
 
 namespace SkillSwapAPI.Application.Features.Identity.Queries.GetGuestListings;
 
-public sealed class GetGuestListingsQueryHandler(
-    IApplicationDbContext context)
+public sealed class GetGuestListingsQueryHandler
     : IRequestHandler<GetGuestListingsQuery, Result<PagedResult<PublicListingDto>>>
 {
     public Task<Result<PagedResult<PublicListingDto>>> Handle(
         GetGuestListingsQuery query,
         CancellationToken ct)
     {
-        _ = context; // preserve context reference for future DbQueries
-
         // Safe, sanitized guest listings query (read-only, no PII, no email/wallet data exposed)
         var items = new List<PublicListingDto>
         {

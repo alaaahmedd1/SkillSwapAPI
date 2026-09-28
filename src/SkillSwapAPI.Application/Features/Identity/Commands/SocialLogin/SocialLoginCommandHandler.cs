@@ -1,9 +1,9 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
 using SkillSwapAPI.Application.Common.Errors;
-using SkillSwapAPI.Application.Common.Interfaces;
 using SkillSwapAPI.Application.Common.Interfaces.Identity;
 using SkillSwapAPI.Application.Common.Interfaces.Notifications;
+using SkillSwapAPI.Application.Common.Interfaces.UnitOfWork;
 using SkillSwapAPI.Application.Features.Identity.Dtos;
 using SkillSwapAPI.Domain.Common.Results;
 
@@ -13,7 +13,7 @@ public sealed class SocialLoginCommandHandler(
     ISocialAuthService socialAuthService,
     IIdentityService identityService,
     ITokenProvider tokenProvider,
-    IApplicationDbContext context,
+    IUnitOfWork unitOfWork,
     ILogger<SocialLoginCommandHandler> logger)
     : IRequestHandler<SocialLoginCommand, Result<LoginResponse>>
 {
@@ -36,7 +36,7 @@ public sealed class SocialLoginCommandHandler(
             return appUserResult.Errors;
         }
 
-        await context.SaveChangesAsync(ct);
+        await unitOfWork.CompleteAsync(ct);
 
         var tokenResult = await tokenProvider.GenerateJwtTokenAsync(appUserResult.Value, ct);
         if (tokenResult.IsError)
