@@ -10,7 +10,8 @@ namespace SkillSwapAPI.Application.Common.Interfaces.UnitOfWork
         ISkillRepository Skills { get; }
         IUserSkillRepository UserSkills { get; }
         ISwapRequestRepository SwapRequests { get; }
-        IBaseRepository<Conversation> Conversations { get; }
+        IConversationRepository Conversations { get; }
+        IMessageRepository Messages { get; }
         Task<int> CompleteAsync(CancellationToken cancellationToken = default);
     }
 

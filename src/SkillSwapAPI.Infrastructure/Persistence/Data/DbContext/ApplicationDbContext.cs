@@ -24,6 +24,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<UserSkill> UserSkills => Set<UserSkill>();
     public DbSet<SwapRequest> SwapRequests => Set<SwapRequest>();
     public DbSet<Conversation> Conversations => Set<Conversation>();
+    public DbSet<Message> Messages => Set<Message>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

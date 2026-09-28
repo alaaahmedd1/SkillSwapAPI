@@ -100,7 +100,7 @@ Orchestrates use cases using CQRS pattern with MediatR.
 **Common Interfaces:**
 - `ICurrentUserService` — Current authenticated user abstraction
 - `IUnitOfWork` / `IBaseRepository<T>` — Unit of Work and generic repository abstractions
-- Dedicated repositories (`ISwapRequestRepository`, `IUserSkillRepository`, `ISkillRepository`, `ISkillCategoryRepository`, `IRefreshTokenRepository`) — Purpose-built query methods extending `IBaseRepository<T>`; handlers call one repo method instead of writing queries inline
+- Dedicated repositories (`ISwapRequestRepository`, `IUserSkillRepository`, `ISkillRepository`, `ISkillCategoryRepository`, `IRefreshTokenRepository`, `IConversationRepository`, `IMessageRepository`) — Purpose-built query methods extending `IBaseRepository<T>`; handlers call one repo method instead of writing queries inline
 - `IJwtProvider` — JWT token generation/validation
 - `IEmailService` — Email sending abstraction
 - `ICacheService` — Distributed cache abstraction
@@ -139,6 +139,9 @@ HTTP entry point with controllers, middleware, and DI orchestration.
 **Controllers:**
 - `ApiBaseController` — Base controller with MediatR integration
 - `HealthController` — Health check endpoint
+
+**Hubs:**
+- `ChatHub` — SignalR hub at `/hubs/chat` for real-time messaging; JWT-authenticated (token accepted from the `access_token` query string for WebSocket connections), authorizes swap membership and status (Accepted/Completed) per conversation, and broadcasts persisted messages to conversation groups
 
 **Middleware:**
 - `GlobalExceptionMiddleware` — Catches unhandled exceptions, returns ProblemDetails

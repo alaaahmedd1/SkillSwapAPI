@@ -17,14 +17,16 @@ namespace SkillSwapAPI.Infrastructure.UnitOfWork
             Skills = new SkillRepository(_context);
             UserSkills = new UserSkillRepository(_context);
             SwapRequests = new SwapRequestRepository(_context);
-            Conversations = new BaseRepository<Conversation>(_context);
+            Conversations = new ConversationRepository(_context);
+            Messages = new MessageRepository(_context);
         }
         public IRefreshTokenRepository RefreshTokens { get; private set; }
         public ISkillCategoryRepository SkillCategories { get; private set; }
         public ISkillRepository Skills { get; private set; }
         public IUserSkillRepository UserSkills { get; private set; }
         public ISwapRequestRepository SwapRequests { get; private set; }
-        public IBaseRepository<Conversation> Conversations { get; private set; }
+        public IConversationRepository Conversations { get; private set; }
+        public IMessageRepository Messages { get; private set; }
 
 
         public async Task<int> CompleteAsync(CancellationToken cancellationToken = default)

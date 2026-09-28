@@ -4,6 +4,7 @@ using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using SkillSwapAPI.API.Hubs;
 using SkillSwapAPI.API.Middleware;
 using System.Text;
 
@@ -44,9 +45,26 @@ public static class DependencyInjection
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
             };
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    var accessToken = context.Request.Query["access_token"];
+                    var path = context.HttpContext.Request.Path;
+
+                    if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                    {
+                        context.Token = accessToken;
+                    }
+
+                    return Task.CompletedTask;
+                }
+            };
         });
 
         services.AddAuthorization();
+
+        services.AddSignalR();
 
         services.AddCors(options =>
         {
@@ -77,6 +95,7 @@ public static class DependencyInjection
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseIpRateLimiting();
+        app.MapHub<ChatHub>("/hubs/chat");
         app.MapControllers();
         app.MapHealthChecks("/health");
 
