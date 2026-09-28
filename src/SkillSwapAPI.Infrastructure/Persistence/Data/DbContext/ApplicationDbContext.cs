@@ -31,7 +31,8 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<TimeWallet> TimeWallets => Set<TimeWallet>();
-
+    public DbSet<TimeLedgerTransaction> TimeLedgerTransactions
+    => Set<TimeLedgerTransaction>();
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

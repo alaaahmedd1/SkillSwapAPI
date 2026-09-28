@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SkillSwapAPI.Application.Features.Wallet.Queries.GetMyWallet;
+using SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactions;
 
 namespace SkillSwapAPI.API.Controllers.Wallet
 {
@@ -24,6 +25,18 @@ namespace SkillSwapAPI.API.Controllers.Wallet
         {
             var result = await _sender.Send(
                 new GetMyWalletQuery(),
+                cancellationToken);
+
+            return Ok(result);
+        }
+
+        [HttpGet("transactions")]
+        public async Task<IActionResult> GetTransactions(
+    [FromQuery] WalletTransactionFilter filter = WalletTransactionFilter.All,
+    CancellationToken cancellationToken = default)
+        {
+            var result = await _sender.Send(
+                new GetWalletTransactionsQuery(filter),
                 cancellationToken);
 
             return Ok(result);
