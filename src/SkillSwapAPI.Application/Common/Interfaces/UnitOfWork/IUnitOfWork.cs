@@ -17,6 +17,8 @@ namespace SkillSwapAPI.Application.Common.Interfaces.UnitOfWork
         IAuditLogRepository AuditLogs { get; }
         ITimeWalletRepository TimeWallets { get; }
         ITimeLedgerTransactionRepository TimeLedgerTransactions { get; }
+        ICreditPackageRepository CreditPackages { get; }
+        IPaymentOrderRepository PaymentOrders { get; }
         Task<int> CompleteAsync(CancellationToken cancellationToken = default);
         Task<IDbContextTransaction> BeginTransactionAsync(
     CancellationToken cancellationToken = default);

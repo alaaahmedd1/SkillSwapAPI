@@ -25,6 +25,8 @@ namespace SkillSwapAPI.Infrastructure.UnitOfWork
             AuditLogs = new AuditLogRepository(_context);
             TimeWallets = new TimeWalletRepository(_context);
             TimeLedgerTransactions = new TimeLedgerTransactionRepository(_context);
+            CreditPackages = new CreditPackageRepository(_context);
+            PaymentOrders = new PaymentOrderRepository(_context);
         }
         public IRefreshTokenRepository RefreshTokens { get; private set; }
         public ISkillCategoryRepository SkillCategories { get; private set; }
@@ -37,6 +39,8 @@ namespace SkillSwapAPI.Infrastructure.UnitOfWork
         public IAuditLogRepository AuditLogs { get; private set; }
         public ITimeWalletRepository TimeWallets { get; }
         public ITimeLedgerTransactionRepository TimeLedgerTransactions { get; }
+        public ICreditPackageRepository CreditPackages { get; }
+        public IPaymentOrderRepository PaymentOrders { get; }
 
         public async Task<int> CompleteAsync(
             CancellationToken cancellationToken = default)

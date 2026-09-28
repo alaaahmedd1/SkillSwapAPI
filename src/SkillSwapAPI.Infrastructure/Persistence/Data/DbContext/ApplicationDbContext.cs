@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using SkillSwapAPI.Domain.Identity;
 using SkillSwapAPI.Domain.Modules.Administration.Entities;
 using SkillSwapAPI.Domain.Modules.Chat.Entities;
+using SkillSwapAPI.Domain.Modules.Payments.Entities;
 using SkillSwapAPI.Domain.Modules.Reviews.Entities;
 using SkillSwapAPI.Domain.Modules.SwapRequests.Entities;
 using SkillSwapAPI.Domain.Modules.Users.Entities;
@@ -33,6 +34,9 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<TimeWallet> TimeWallets => Set<TimeWallet>();
     public DbSet<TimeLedgerTransaction> TimeLedgerTransactions
     => Set<TimeLedgerTransaction>();
+    public DbSet<CreditPackage> CreditPackages => Set<CreditPackage>();
+    public DbSet<PaymentOrder> PaymentOrders => Set<PaymentOrder>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
