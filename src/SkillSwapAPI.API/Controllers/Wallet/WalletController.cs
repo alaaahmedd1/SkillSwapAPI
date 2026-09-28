@@ -33,11 +33,11 @@ namespace SkillSwapAPI.API.Controllers.Wallet
 
         [HttpGet("transactions")]
         public async Task<IActionResult> GetTransactions(
-             [FromQuery] WalletTransactionFilter filter = WalletTransactionFilter.All,
-             CancellationToken cancellationToken = default)
+            [FromQuery] GetWalletTransactionsQuery query,
+            CancellationToken cancellationToken)
         {
             var result = await _sender.Send(
-                new GetWalletTransactionsQuery(filter),
+                query,
                 cancellationToken);
 
             return Ok(result);

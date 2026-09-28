@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using SkillSwapAPI.Application.Common.Models;
 using SkillSwapAPI.Application.Features.Wallet.Dtos;
 using SkillSwapAPI.Domain.Modules.Wallet.Enums;
 using System;
@@ -9,7 +10,11 @@ using System.Threading.Tasks;
 
 namespace SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactions
 {
-    public sealed record GetWalletTransactionsQuery(
-        WalletTransactionFilter Filter = WalletTransactionFilter.All)
-        : IRequest<IReadOnlyList<WalletTransactionDto>>;
+    public sealed record GetWalletTransactionsQuery
+        : PagedRequest,
+          IRequest<PagedResult<WalletTransactionDto>>
+    {
+        public WalletTransactionFilter Filter { get; init; }
+            = WalletTransactionFilter.All;
+    }
 }
