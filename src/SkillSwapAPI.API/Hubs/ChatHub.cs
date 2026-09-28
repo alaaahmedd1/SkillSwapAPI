@@ -9,8 +9,28 @@ using SkillSwapAPI.Application.Features.Chat.Queries.GetConversationAccess;
 namespace SkillSwapAPI.API.Hubs;
 
 [Authorize]
-public sealed class ChatHub(ISender mediator) : Hub
+public sealed class ChatHub(ISender mediator, ChatConnectionManager connectionManager) : Hub
 {
+    public override async Task OnConnectedAsync()
+    {
+        if (TryGetUserId(out var userId))
+        {
+            connectionManager.AddConnection(userId, Context);
+        }
+
+        await base.OnConnectedAsync();
+    }
+
+    public override async Task OnDisconnectedAsync(Exception? exception)
+    {
+        if (TryGetUserId(out var userId))
+        {
+            connectionManager.RemoveConnection(userId, Context.ConnectionId);
+        }
+
+        await base.OnDisconnectedAsync(exception);
+    }
+
     public async Task JoinConversation(Guid conversationId)
     {
         var userId = GetUserId();
@@ -54,14 +74,19 @@ public sealed class ChatHub(ISender mediator) : Hub
 
     private Guid GetUserId()
     {
-        var value = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier)
-            ?? Context.User?.FindFirstValue("sub");
-
-        if (!Guid.TryParse(value, out var userId))
+        if (!TryGetUserId(out var userId))
         {
             throw new HubException("Token does not contain a valid user identifier.");
         }
 
         return userId;
+    }
+
+    private bool TryGetUserId(out Guid userId)
+    {
+        var value = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? Context.User?.FindFirstValue("sub");
+
+        return Guid.TryParse(value, out userId);
     }
 }

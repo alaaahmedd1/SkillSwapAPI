@@ -20,5 +20,9 @@ namespace SkillSwapAPI.Application.Common.Interfaces.Repos
             Guid offeredSkillId,
             Guid requestedSkillId,
             CancellationToken cancellationToken = default);
+
+        Task<IReadOnlyList<SwapRequest>> GetActiveByUserAsync(
+            Guid userId,
+            CancellationToken cancellationToken = default);
     }
 }

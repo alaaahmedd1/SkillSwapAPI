@@ -9,5 +9,7 @@ namespace SkillSwapAPI.Application.Common.Interfaces.Repos
         Task<IEnumerable<Skill>> GetByIdsWithCategoryAsync(IReadOnlyCollection<Guid> skillIds, CancellationToken cancellationToken = default);
 
         Task<bool> ExistsAsync(Guid skillId, CancellationToken cancellationToken = default);
+
+        Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken = default);
     }
 }

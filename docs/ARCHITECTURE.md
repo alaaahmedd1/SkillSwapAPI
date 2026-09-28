@@ -74,10 +74,13 @@ The innermost layer containing core business logic with zero external dependenci
 **Module Structure:**
 ```
 Modules/
-└── Identity/
-    ├── Abstractions/     # IIdentityService, IAuthenticationService
-    ├── Events/           # UserRegisteredEvent
-    └── Enums/            # UserRole
+├── Administration/    # AuditLog
+├── Chat/              # Conversation, Message
+├── Identity/          # RefreshToken, Role, SocialProvider
+├── Reviews/           # Review, ReviewSubmittedEvent
+├── Skills/            # Skill, SkillCategory
+├── SwapRequests/      # SwapRequest, SwapRequestStatus
+└── Users/             # UserSkill, ProficiencyLevel, SkillType
 ```
 
 ### Application Layer (`SkillSwapAPI.Application`)
@@ -92,6 +95,11 @@ Orchestrates use cases using CQRS pattern with MediatR.
 - `DomainEventNotification<T>` — Wraps domain events as MediatR notifications
 - `ReviewSubmittedEvent` — Published after a review is persisted; `ReviewSubmittedEventHandler` recalculates the reviewee's `AverageRating`/`TotalReviewsCount` from `IReviewRepository` and writes them through `IIdentityService`
 
+**Admin Features (`Features/Admin`):**
+- `CreateCategory` / `CreateSkill` — Commands that create catalog entries and write an immutable audit entry (`AuditLog`) recording admin identity, action, target entity ID, and timestamp
+- `GetUsers` — Admin user listing with `IsActive` filter, name/email search, and server-side pagination via `IIdentityService.GetPagedUsersAsync`
+- `UpdateUserStatus` — Suspension cascade: revokes all active refresh tokens, cancels active swap requests, writes a `BanUser` audit entry, and forcibly disconnects the user's SignalR sessions through `IChatConnectionManager`
+
 **Pipeline Behaviors:**
 - `ValidationBehavior` — Runs FluentValidation validators before handler execution
 - `LoggingBehavior` — Logs request entry/exit with timing
@@ -101,11 +109,12 @@ Orchestrates use cases using CQRS pattern with MediatR.
 **Common Interfaces:**
 - `ICurrentUserService` — Current authenticated user abstraction
 - `IUnitOfWork` / `IBaseRepository<T>` — Unit of Work and generic repository abstractions
-- Dedicated repositories (`ISwapRequestRepository`, `IUserSkillRepository`, `ISkillRepository`, `ISkillCategoryRepository`, `IRefreshTokenRepository`, `IConversationRepository`, `IMessageRepository`, `IReviewRepository`) — Purpose-built query methods extending `IBaseRepository<T>`; handlers call one repo method instead of writing queries inline
+- Dedicated repositories (`ISwapRequestRepository`, `IUserSkillRepository`, `ISkillRepository`, `ISkillCategoryRepository`, `IRefreshTokenRepository`, `IConversationRepository`, `IMessageRepository`, `IReviewRepository`, `IAuditLogRepository`) — Purpose-built query methods extending `IBaseRepository<T>`; handlers call one repo method instead of writing queries inline
 - `IJwtProvider` — JWT token generation/validation
 - `IEmailService` — Email sending abstraction
 - `ICacheService` — Distributed cache abstraction
 - `IDateTimeProvider` — Testable DateTime.UtcNow
+- `IChatConnectionManager` — Forcibly disconnects a user's active SignalR sessions (implemented in API over `HubCallerContext`)
 
 **Models:**
 - `PagedRequest` — Base for paginated queries
@@ -119,10 +128,12 @@ Implements all external concerns and abstractions defined in Application/Domain.
 - `ApplicationDbContext` — EF Core DbContext inheriting IdentityDbContext with audit support
 - `GenericRepository<TEntity, TId>` — Generic repository implementation
 - `UnitOfWork` — Unit of work implementation
+- `AuditLogRepository` — Dedicated repository for `AuditLog` reads/writes
 
 **Identity:**
 - `ApplicationUser` — ASP.NET Core Identity user with extended properties
 - `RefreshToken` — Refresh token entity with expiry and revocation tracking
+- `IdentityRoleConfiguration` — Seeds the `Admin` and `User` roles with fixed GUIDs via `HasData`
 
 **Authentication:**
 - `JwtOptions` — JWT configuration (bound from appsettings)
@@ -140,9 +151,11 @@ HTTP entry point with controllers, middleware, and DI orchestration.
 **Controllers:**
 - `ApiBaseController` — Base controller with MediatR integration
 - `HealthController` — Health check endpoint
+- `AdminController` — `/api/v1/admin` endpoints (catalog creation, user listing, user status) guarded by `[Authorize(Roles = "Admin")]`
 
 **Hubs:**
 - `ChatHub` — SignalR hub at `/hubs/chat` for real-time messaging; JWT-authenticated (token accepted from the `access_token` query string for WebSocket connections), authorizes swap membership and status (Accepted/Completed) per conversation, and broadcasts persisted messages to conversation groups
+- `ChatConnectionManager` — Singleton registry of live `HubCallerContext` per user; implements `IChatConnectionManager.DisconnectUserAsync` so admin suspension can abort active WebSocket sessions
 
 **Middleware:**
 - `GlobalExceptionMiddleware` — Catches unhandled exceptions, returns ProblemDetails

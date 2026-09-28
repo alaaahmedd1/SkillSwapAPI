@@ -50,4 +50,16 @@ public interface IIdentityService
         decimal averageRating,
         int totalReviewsCount,
         CancellationToken ct = default);
+
+    Task<(IReadOnlyList<ProfileIdentityDto> Items, int TotalCount)> GetPagedUsersAsync(
+        bool? isActive,
+        string? searchTerm,
+        int pageNumber,
+        int pageSize,
+        CancellationToken ct = default);
+
+    Task<Result<ProfileIdentityDto>> UpdateUserStatusAsync(
+        Guid userId,
+        bool isActive,
+        CancellationToken ct = default);
 }
