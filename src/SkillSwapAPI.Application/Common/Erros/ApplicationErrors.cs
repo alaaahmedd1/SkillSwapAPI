@@ -108,4 +108,14 @@ public static class ApplicationErrors
         public static readonly Error ConcurrencyConflict =
             Error.Conflict("SwapRequests.ConcurrencyConflict", "The swap request was modified by another request. Please retry.");
     }
+
+    public static class Chat
+    {
+        public static readonly Error ConversationNotFound =
+            Error.NotFound("Chat.ConversationNotFound", "The conversation was not found.");
+        public static readonly Error NotSwapParticipant =
+            Error.Forbidden("Chat.NotSwapParticipant", "You are not a participant in this conversation.");
+        public static readonly Error SwapNotActive =
+            Error.Forbidden("Chat.SwapNotActive", "Messaging is only available for accepted or completed swaps.");
+    }
 }
