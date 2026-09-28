@@ -90,6 +90,7 @@ Orchestrates use cases using CQRS pattern with MediatR.
 - `IQuery<T>` — Query marker returning `Result<T>`
 - `IQueryHandler<TQuery, TResponse>` — Query handlers
 - `DomainEventNotification<T>` — Wraps domain events as MediatR notifications
+- `ReviewSubmittedEvent` — Published after a review is persisted; `ReviewSubmittedEventHandler` recalculates the reviewee's `AverageRating`/`TotalReviewsCount` from `IReviewRepository` and writes them through `IIdentityService`
 
 **Pipeline Behaviors:**
 - `ValidationBehavior` — Runs FluentValidation validators before handler execution
@@ -100,7 +101,7 @@ Orchestrates use cases using CQRS pattern with MediatR.
 **Common Interfaces:**
 - `ICurrentUserService` — Current authenticated user abstraction
 - `IUnitOfWork` / `IBaseRepository<T>` — Unit of Work and generic repository abstractions
-- Dedicated repositories (`ISwapRequestRepository`, `IUserSkillRepository`, `ISkillRepository`, `ISkillCategoryRepository`, `IRefreshTokenRepository`, `IConversationRepository`, `IMessageRepository`) — Purpose-built query methods extending `IBaseRepository<T>`; handlers call one repo method instead of writing queries inline
+- Dedicated repositories (`ISwapRequestRepository`, `IUserSkillRepository`, `ISkillRepository`, `ISkillCategoryRepository`, `IRefreshTokenRepository`, `IConversationRepository`, `IMessageRepository`, `IReviewRepository`) — Purpose-built query methods extending `IBaseRepository<T>`; handlers call one repo method instead of writing queries inline
 - `IJwtProvider` — JWT token generation/validation
 - `IEmailService` — Email sending abstraction
 - `ICacheService` — Distributed cache abstraction

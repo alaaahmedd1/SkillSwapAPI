@@ -12,6 +12,7 @@ namespace SkillSwapAPI.Application.Common.Interfaces.UnitOfWork
         ISwapRequestRepository SwapRequests { get; }
         IConversationRepository Conversations { get; }
         IMessageRepository Messages { get; }
+        IReviewRepository Reviews { get; }
         Task<int> CompleteAsync(CancellationToken cancellationToken = default);
     }
 

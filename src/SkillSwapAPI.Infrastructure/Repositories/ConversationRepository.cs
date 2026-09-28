@@ -13,13 +13,22 @@ namespace SkillSwapAPI.Infrastructure.Repositories
 
         public async Task<SwapRequest?> GetSwapRequestByConversationAsync(Guid conversationId, CancellationToken cancellationToken = default)
         {
-            return await (
-                from conversation in _context.Set<Conversation>().AsNoTracking()
-                join swapRequest in _context.Set<SwapRequest>().AsNoTracking()
-                    on conversation.SwapRequestId equals swapRequest.Id
-                where conversation.Id == conversationId
-                select swapRequest
-            ).FirstOrDefaultAsync(cancellationToken);
+            return await _context.Set<Conversation>()
+                .AsNoTracking()
+                .Join(
+                  _context.Set<SwapRequest>().AsNoTracking(),
+                  conv => conv.SwapRequestId,
+                  swreq => swreq.Id,
+                  (conversation, swapRequest) => new
+                  {
+                      conversation,
+                      swapRequest
+                  }
+                )
+                .Where(x => x.conversation.Id == conversationId)
+                .Select(x => x.swapRequest)
+                .FirstOrDefaultAsync(cancellationToken);
+
         }
     }
 }

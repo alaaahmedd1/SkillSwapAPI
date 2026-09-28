@@ -118,4 +118,14 @@ public static class ApplicationErrors
         public static readonly Error SwapNotActive =
             Error.Forbidden("Chat.SwapNotActive", "Messaging is only available for accepted or completed swaps.");
     }
+
+    public static class Reviews
+    {
+        public static readonly Error SwapNotCompleted =
+            Error.Validation("Reviews.SwapNotCompleted", "Reviews can only be submitted for completed swaps.");
+        public static readonly Error NotParticipant =
+            Error.Forbidden("Reviews.NotParticipant", "You are not a participant in this swap request.");
+        public static readonly Error InvalidReviewee =
+            Error.Validation("Reviews.InvalidReviewee", "The reviewee must be the other participant of the swap request.");
+    }
 }

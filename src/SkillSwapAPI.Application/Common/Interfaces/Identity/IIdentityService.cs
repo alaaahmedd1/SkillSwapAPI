@@ -44,4 +44,10 @@ public interface IIdentityService
         string firstName,
         string lastName,
         CancellationToken ct = default);
+
+    Task<Result<Updated>> UpdateRatingSummaryAsync(
+        Guid userId,
+        decimal averageRating,
+        int totalReviewsCount,
+        CancellationToken ct = default);
 }

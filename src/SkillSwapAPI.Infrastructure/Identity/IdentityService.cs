@@ -261,6 +261,31 @@ public sealed class IdentityService(
         return Result.Updated;
     }
 
+    public async Task<Result<Updated>> UpdateRatingSummaryAsync(
+        Guid userId,
+        decimal averageRating,
+        int totalReviewsCount,
+        CancellationToken ct = default)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+        {
+            return ApplicationErrors.Auth.UserNotFound;
+        }
+
+        user.AverageRating = averageRating;
+        user.TotalReviewsCount = totalReviewsCount;
+
+        var result = await userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            var error = result.Errors.FirstOrDefault();
+            return Error.Validation(error?.Code ?? "Rating.UpdateFailed", error?.Description ?? "Failed to update rating summary.");
+        }
+
+        return Result.Updated;
+    }
+
     private static (string FirstName, string LastName) SplitFullName(string fullName)
     {
         if (string.IsNullOrWhiteSpace(fullName))
