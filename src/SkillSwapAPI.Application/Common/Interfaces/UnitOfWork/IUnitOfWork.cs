@@ -15,6 +15,8 @@ namespace SkillSwapAPI.Application.Common.Interfaces.UnitOfWork
         IReviewRepository Reviews { get; }
         IAuditLogRepository AuditLogs { get; }
         ITimeWalletRepository TimeWallets { get; }
+        ICreditPackageRepository CreditPackages { get; }
+        IPaymentOrderRepository PaymentOrders { get; }
         Task<int> CompleteAsync(CancellationToken cancellationToken = default);
     }
 
