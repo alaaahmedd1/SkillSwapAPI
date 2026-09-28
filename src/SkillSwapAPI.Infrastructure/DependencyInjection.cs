@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using QuestPDF.Infrastructure;
 using SkillSwapAPI.Application.Common.Interfaces.Identity;
 using SkillSwapAPI.Application.Common.Interfaces.Notifications;
 using SkillSwapAPI.Application.Common.Interfaces.Services;
@@ -13,6 +14,7 @@ using SkillSwapAPI.Application.Common.Settings;
 using SkillSwapAPI.Infrastructure.Identity;
 using SkillSwapAPI.Infrastructure.Persistence.Data.DbContext;
 using SkillSwapAPI.Infrastructure.Services;
+using SkillSwapAPI.Infrastructure.Services.Pdf;
 using SkillSwapAPI.Infrastructure.Settings;
 
 public static class DependencyInjection
@@ -76,6 +78,8 @@ public static class DependencyInjection
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders();
 
+        QuestPDF.Settings.License = LicenseType.Community;
+
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<ITokenProvider, TokenProvider>();
         services.AddHttpContextAccessor();
@@ -84,6 +88,7 @@ public static class DependencyInjection
         services.AddScoped<IOtpService, OtpService>();
         services.AddScoped<IEmailService, GmailEmailService>();
         services.AddScoped<IEmailTempService, EmailTemplateService>();
+        services.AddScoped<IPdfService, QuestPdfService>();
 
         services.AddHttpClient("Facebook", (serviceProvider, client) =>
         {
