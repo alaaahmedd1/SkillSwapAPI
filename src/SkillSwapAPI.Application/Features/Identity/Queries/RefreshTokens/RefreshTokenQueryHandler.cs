@@ -79,6 +79,12 @@ public sealed class RefreshTokenQueryHandler(
             return userResult.Errors;
         }
 
+        if (!userResult.Value.IsActive)
+        {
+            logger.LogWarning("Refresh token denied for suspended user {UserId}", userId);
+            return ApplicationErrors.Auth.AccountSuspended;
+        }
+
         var tokenResult = await tokenProvider.GenerateJwtTokenAsync(userResult.Value, ct);
         if (tokenResult.IsError)
         {

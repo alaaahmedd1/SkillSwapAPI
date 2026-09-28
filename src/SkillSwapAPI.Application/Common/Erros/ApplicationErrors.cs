@@ -36,6 +36,9 @@ public static class ApplicationErrors
         public static Error EmailNotVerified =>
             Error.Forbidden("Auth.EmailNotVerified", "Email address has not been verified. Please verify your email before logging in.");
 
+        public static Error AccountSuspended =>
+            Error.Forbidden("Auth.AccountSuspended", "Your account has been suspended. Please contact support.");
+
         public static Error UserNotFound =>
             Error.NotFound("Auth.UserNotFound", "User not found.");
 
@@ -87,6 +90,8 @@ public static class ApplicationErrors
             Error.Validation("Skills.DuplicateType", "This skill is already listed as the opposite type (Offered/Seeking) for this user.");
         public static readonly Error SkillNotFound =
             Error.Validation("Skills.NotFound", "The specified skill does not exist.");
+        public static readonly Error SkillCategoryNotFound =
+            Error.Validation("Skills.CategoryNotFound", "The specified skill category does not exist.");
         public static readonly Error UserSkillNotFound =
             Error.Validation("Skills.UserSkillNotFound", "The specified user skill entry was not found.");
         public static readonly Error UserSkillNotOwned =

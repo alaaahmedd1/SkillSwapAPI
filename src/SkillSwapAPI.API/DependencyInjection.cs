@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SkillSwapAPI.API.Hubs;
 using SkillSwapAPI.API.Middleware;
+using SkillSwapAPI.Application.Common.Interfaces.Services;
 using System.Text;
 
 public static class DependencyInjection
@@ -65,6 +66,9 @@ public static class DependencyInjection
         services.AddAuthorization();
 
         services.AddSignalR();
+
+        services.AddSingleton<ChatConnectionManager>();
+        services.AddSingleton<IChatConnectionManager>(sp => sp.GetRequiredService<ChatConnectionManager>());
 
         services.AddCors(options =>
         {

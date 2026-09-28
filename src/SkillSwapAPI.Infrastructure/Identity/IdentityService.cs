@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using SkillSwapAPI.Application.Common.Errors;
 using SkillSwapAPI.Application.Common.Interfaces.Identity;
 using SkillSwapAPI.Application.Common.Models;
@@ -73,6 +74,11 @@ public sealed class IdentityService(
         if (!user.EmailConfirmed)
         {
             return ApplicationErrors.Auth.EmailNotVerified;
+        }
+
+        if (!user.IsActive)
+        {
+            return ApplicationErrors.Auth.AccountSuspended;
         }
 
         var roles = await userManager.GetRolesAsync(user);
@@ -284,6 +290,65 @@ public sealed class IdentityService(
         }
 
         return Result.Updated;
+    }
+
+    public async Task<(IReadOnlyList<ProfileIdentityDto> Items, int TotalCount)> GetPagedUsersAsync(
+        bool? isActive,
+        string? searchTerm,
+        int pageNumber,
+        int pageSize,
+        CancellationToken ct = default)
+    {
+        var query = userManager.Users.AsNoTracking();
+
+        if (isActive.HasValue)
+        {
+            query = query.Where(user => user.IsActive == isActive.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = searchTerm.Trim();
+            query = query.Where(user =>
+                user.FirstName.Contains(term)
+                || user.LastName.Contains(term)
+                || (user.Email != null && user.Email.Contains(term)));
+        }
+
+        var totalCount = await query.CountAsync(ct);
+
+        var users = await query
+            .OrderByDescending(user => user.CreatedAtUtc)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(ct);
+
+        var items = users.Select(ToProfileIdentityDto).ToList();
+
+        return (items, totalCount);
+    }
+
+    public async Task<Result<ProfileIdentityDto>> UpdateUserStatusAsync(
+        Guid userId,
+        bool isActive,
+        CancellationToken ct = default)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+        {
+            return ApplicationErrors.Auth.UserNotFound;
+        }
+
+        user.IsActive = isActive;
+
+        var result = await userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            var error = result.Errors.FirstOrDefault();
+            return Error.Validation(error?.Code ?? "Status.UpdateFailed", error?.Description ?? "Failed to update user status.");
+        }
+
+        return ToProfileIdentityDto(user);
     }
 
     private static (string FirstName, string LastName) SplitFullName(string fullName)

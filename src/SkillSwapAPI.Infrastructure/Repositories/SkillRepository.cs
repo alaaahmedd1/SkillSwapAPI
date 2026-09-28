@@ -29,5 +29,10 @@ namespace SkillSwapAPI.Infrastructure.Repositories
         {
             return await _context.Set<Skill>().AnyAsync(skill => skill.Id == skillId, cancellationToken);
         }
+
+        public async Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken = default)
+        {
+            return await _context.Set<Skill>().AnyAsync(skill => skill.Name == name, cancellationToken);
+        }
     }
 }

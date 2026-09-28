@@ -18,5 +18,19 @@ namespace SkillSwapAPI.Infrastructure.Repositories
                 .OrderBy(category => category.Name)
                 .ToListAsync(cancellationToken);
         }
+
+        public async Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken = default)
+        {
+            return await _context.Set<SkillCategory>().AnyAsync(
+                category => category.Name == name,
+                cancellationToken);
+        }
+
+        public async Task<bool> ExistsAsync(int categoryId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Set<SkillCategory>().AnyAsync(
+                category => category.Id == categoryId,
+                cancellationToken);
+        }
     }
 }

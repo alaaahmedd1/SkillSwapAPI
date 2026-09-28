@@ -62,5 +62,17 @@ namespace SkillSwapAPI.Infrastructure.Repositories
                     && swapRequest.RequestedSkillId == requestedSkillId,
                 cancellationToken);
         }
+
+        public async Task<IReadOnlyList<SwapRequest>> GetActiveByUserAsync(
+            Guid userId,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.Set<SwapRequest>()
+                .Where(swapRequest =>
+                    (swapRequest.RequesterId == userId || swapRequest.ReceiverId == userId)
+                    && (swapRequest.Status == SwapRequestStatus.Pending
+                        || swapRequest.Status == SwapRequestStatus.Accepted))
+                .ToListAsync(cancellationToken);
+        }
     }
 }
