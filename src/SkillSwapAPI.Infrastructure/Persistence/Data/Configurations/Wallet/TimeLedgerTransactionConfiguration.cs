@@ -41,26 +41,31 @@ namespace SkillSwapAPI.Infrastructure.Persistence.Data.Configurations.Wallet
                 builder.HasIndex(transaction => transaction.ReferenceCode)
                     .IsUnique();
 
-                builder.Property(transaction => transaction.Title)
+                builder.HasIndex(transaction => new
+                {
+                    transaction.SwapRequestId,
+                    transaction.TransactionType
+                })
+                    .IsUnique()
+                    .HasFilter("[SwapRequestId] IS NOT NULL");
+
+            builder.Property(transaction => transaction.Title)
                     .HasMaxLength(200)
                     .IsRequired();
 
                 builder.Property(transaction => transaction.CreatedAtUtc)
                     .IsRequired();
 
-                // TimeWallet relationship
                 builder.HasOne<TimeWallet>()
                     .WithMany()
                     .HasForeignKey(transaction => transaction.WalletId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // SwapRequest relationship
                 builder.HasOne<SwapRequest>()
                     .WithMany()
                     .HasForeignKey(transaction => transaction.SwapRequestId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // PartnerUser relationship
                 builder.HasOne<AppUser>()
                     .WithMany()
                     .HasForeignKey(transaction => transaction.PartnerUserId)

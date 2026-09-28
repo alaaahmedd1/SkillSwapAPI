@@ -13,5 +13,9 @@ namespace SkillSwapAPI.Application.Common.Interfaces.Repos
         Task<IReadOnlyList<TimeLedgerTransaction>> GetByWalletIdAsync(
             Guid walletId,
             CancellationToken cancellationToken = default);
+
+        Task<bool> ExistsForSwapRequestAsync(
+            Guid swapRequestId,
+            CancellationToken cancellationToken = default);
     }
 }

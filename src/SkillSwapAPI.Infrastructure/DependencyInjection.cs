@@ -89,7 +89,7 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, GmailEmailService>();
         services.AddScoped<IEmailTempService, EmailTemplateService>();
         services.AddScoped<IPdfService, QuestPdfService>();
-
+        services.AddScoped<ITimeLedgerService, TimeLedgerService>();
         services.AddHttpClient("Facebook", (serviceProvider, client) =>
         {
             var settings =

@@ -34,5 +34,14 @@ namespace SkillSwapAPI.Infrastructure.Repositories
                 .OrderByDescending(transaction => transaction.CreatedAtUtc)
                 .ToListAsync(cancellationToken);
         }
+        public async Task<bool> ExistsForSwapRequestAsync(
+            Guid swapRequestId,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.TimeLedgerTransactions
+                .AnyAsync(
+                    transaction => transaction.SwapRequestId == swapRequestId,
+                    cancellationToken);
+        }
     }
 }

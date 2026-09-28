@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore.Storage;
 using SkillSwapAPI.Application.Common.Interfaces.Repos;
 using SkillSwapAPI.Application.Common.Interfaces.UnitOfWork;
 using SkillSwapAPI.Domain.Modules.Chat.Entities;
@@ -37,9 +38,17 @@ namespace SkillSwapAPI.Infrastructure.UnitOfWork
         public ITimeWalletRepository TimeWallets { get; }
         public ITimeLedgerTransactionRepository TimeLedgerTransactions { get; }
 
-        public async Task<int> CompleteAsync(CancellationToken cancellationToken = default)
+        public async Task<int> CompleteAsync(
+            CancellationToken cancellationToken = default)
         {
             return await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.Database.BeginTransactionAsync(
+                cancellationToken);
         }
 
         public void Dispose()
