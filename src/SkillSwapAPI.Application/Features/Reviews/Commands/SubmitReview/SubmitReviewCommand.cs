@@ -9,4 +9,5 @@ public sealed record SubmitReviewCommand(
     Guid ReviewerId,
     Guid RevieweeId,
     int Rating,
-    string? Comment) : IRequest<Result<ReviewDto>>;
+    string? Comment,
+    int? BadgeId) : IRequest<Result<ReviewDto>>;

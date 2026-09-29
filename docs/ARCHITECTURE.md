@@ -75,6 +75,7 @@ The innermost layer containing core business logic with zero external dependenci
 ```
 Modules/
 ├── Administration/    # AuditLog
+├── Badges/            # Badge, UserBadgeAward
 ├── Chat/              # Conversation, Message
 ├── Identity/          # RefreshToken, Role, SocialProvider
 ├── LiveSessions/      # LiveSessionRoom, LiveSessionStatus, WhiteboardSnapshot
@@ -112,7 +113,7 @@ Orchestrates use cases using CQRS pattern with MediatR.
 **Common Interfaces:**
 - `ICurrentUserService` — Current authenticated user abstraction
 - `IUnitOfWork` / `IBaseRepository<T>` — Unit of Work and generic repository abstractions
-- Dedicated repositories (`ISwapRequestRepository`, `IUserSkillRepository`, `ISkillRepository`, `ISkillCategoryRepository`, `IRefreshTokenRepository`, `IConversationRepository`, `IMessageRepository`, `IReviewRepository`, `IAuditLogRepository`, `ITimeWalletRepository`, `ITimeLedgerTransactionRepository`, `ICreditPackageRepository`, `IPaymentOrderRepository`, `ILiveSessionRoomRepository`, `IWhiteboardSnapshotRepository`) — Purpose-built query methods extending `IBaseRepository<T>`; handlers call one repo method instead of writing queries inline
+- Dedicated repositories (`ISwapRequestRepository`, `IUserSkillRepository`, `ISkillRepository`, `ISkillCategoryRepository`, `IRefreshTokenRepository`, `IConversationRepository`, `IMessageRepository`, `IReviewRepository`, `IAuditLogRepository`, `ITimeWalletRepository`, `ITimeLedgerTransactionRepository`, `ICreditPackageRepository`, `IPaymentOrderRepository`, `ILiveSessionRoomRepository`, `IWhiteboardSnapshotRepository`, `IBadgeRepository`, `IUserBadgeAwardRepository`) — Purpose-built query methods extending `IBaseRepository<T>`; handlers call one repo method instead of writing queries inline
 - `IJwtProvider` — JWT token generation/validation
 - `IEmailService` — Email sending abstraction
 - `ICacheService` — Distributed cache abstraction
@@ -158,6 +159,7 @@ HTTP entry point with controllers, middleware, and DI orchestration.
 - `ApiBaseController` — Base controller with MediatR integration
 - `HealthController` — Health check endpoint
 - `AdminController` — `/api/v1/admin` endpoints (catalog creation, user listing, user status) guarded by `[Authorize(Roles = "Admin")]`
+- `BadgesController` — `/api/v1/badges` master badge catalog; `GET` is `[AllowAnonymous]` and returns active badges only. `ReviewsController` accepts an optional `BadgeId` on `POST /api/v1/reviews` — when present, a `UserBadgeAward` is created for the reviewee in the same save (one badge per review enforced by the unique `ReviewId` index), and `UsersController` exposes `GET /{userId}/badges` with per-badge `AwardCount`/`LastAwardedAtUtc` computed from the award rows
 - `LiveSessionsController` — `/api/v1/live-sessions` endpoints; `POST /{swapId}/join` validates swap membership and returns the room connection token (idempotent rejoin); `POST /{roomId}/end` terminates the room, computes elapsed duration, and settles rounded minutes between wallets (idempotent — no re-settlement on repeat)
 
 **Hubs:**

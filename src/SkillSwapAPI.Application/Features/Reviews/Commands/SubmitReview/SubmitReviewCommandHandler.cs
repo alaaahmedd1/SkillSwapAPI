@@ -4,6 +4,7 @@ using SkillSwapAPI.Application.Common.Interfaces.Identity;
 using SkillSwapAPI.Application.Common.Interfaces.UnitOfWork;
 using SkillSwapAPI.Application.Features.Reviews.Dtos;
 using SkillSwapAPI.Domain.Common.Results;
+using SkillSwapAPI.Domain.Modules.Badges.Entities;
 using SkillSwapAPI.Domain.Modules.Reviews.Entities;
 using SkillSwapAPI.Domain.Modules.Reviews.Events;
 using SkillSwapAPI.Domain.Modules.SwapRequests.Enums;
@@ -56,7 +57,35 @@ public sealed class SubmitReviewCommandHandler(
             CreatedAtUtc = DateTimeOffset.UtcNow
         };
 
+        UserBadgeAward? badgeAward = null;
+
+        if (command.BadgeId.HasValue)
+        {
+            var badge = await unitOfWork.Badges.GetByIdAsync(command.BadgeId.Value, ct);
+
+            if (badge is null || !badge.IsActive)
+            {
+                return ApplicationErrors.Badges.BadgeNotFound;
+            }
+
+            badgeAward = new UserBadgeAward
+            {
+                Id = Guid.NewGuid(),
+                ReviewId = review.Id,
+                BadgeId = badge.Id,
+                ReviewerId = command.ReviewerId,
+                RevieweeId = command.RevieweeId,
+                AwardedAtUtc = DateTimeOffset.UtcNow
+            };
+        }
+
         await unitOfWork.Reviews.AddAsync(review, ct);
+
+        if (badgeAward is not null)
+        {
+            await unitOfWork.UserBadgeAwards.AddAsync(badgeAward, ct);
+        }
+
         await unitOfWork.CompleteAsync(ct);
 
         await publisher.Publish(new ReviewSubmittedEvent

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SkillSwapAPI.Domain.Identity;
 using SkillSwapAPI.Domain.Modules.Administration.Entities;
+using SkillSwapAPI.Domain.Modules.Badges.Entities;
 using SkillSwapAPI.Domain.Modules.Chat.Entities;
 using SkillSwapAPI.Domain.Modules.LiveSessions.Entities;
 using SkillSwapAPI.Domain.Modules.Payments.Entities;
@@ -39,6 +40,8 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<PaymentOrder> PaymentOrders => Set<PaymentOrder>();
     public DbSet<LiveSessionRoom> LiveSessionRooms => Set<LiveSessionRoom>();
     public DbSet<WhiteboardSnapshot> WhiteboardSnapshots => Set<WhiteboardSnapshot>();
+    public DbSet<Badge> Badges => Set<Badge>();
+    public DbSet<UserBadgeAward> UserBadgeAwards => Set<UserBadgeAward>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

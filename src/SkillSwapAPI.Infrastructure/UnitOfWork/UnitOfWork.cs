@@ -29,6 +29,8 @@ namespace SkillSwapAPI.Infrastructure.UnitOfWork
             PaymentOrders = new PaymentOrderRepository(_context);
             LiveSessionRooms = new LiveSessionRoomRepository(_context);
             WhiteboardSnapshots = new WhiteboardSnapshotRepository(_context);
+            Badges = new BadgeRepository(_context);
+            UserBadgeAwards = new UserBadgeAwardRepository(_context);
         }
         public IRefreshTokenRepository RefreshTokens { get; private set; }
         public ISkillCategoryRepository SkillCategories { get; private set; }
@@ -45,6 +47,8 @@ namespace SkillSwapAPI.Infrastructure.UnitOfWork
         public IPaymentOrderRepository PaymentOrders { get; }
         public ILiveSessionRoomRepository LiveSessionRooms { get; }
         public IWhiteboardSnapshotRepository WhiteboardSnapshots { get; }
+        public IBadgeRepository Badges { get; }
+        public IUserBadgeAwardRepository UserBadgeAwards { get; }
 
         public async Task<int> CompleteAsync(
             CancellationToken cancellationToken = default)

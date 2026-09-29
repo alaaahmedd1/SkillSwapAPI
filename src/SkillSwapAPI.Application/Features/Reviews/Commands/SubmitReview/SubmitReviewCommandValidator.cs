@@ -19,5 +19,15 @@ public sealed class SubmitReviewCommandValidator : AbstractValidator<SubmitRevie
             .WithMessage("You have already submitted a review for this swap request.")
             .OverridePropertyName("Review")
             .When(command => command.SwapRequestId != Guid.Empty && command.ReviewerId != Guid.Empty);
+
+        RuleFor(command => command.BadgeId)
+            .MustAsync(async (badgeId, ct) =>
+            {
+                var badge = await unitOfWork.Badges.GetByIdAsync(badgeId.Value, ct);
+
+                return badge is not null && badge.IsActive;
+            })
+            .WithMessage("The selected badge was not found or is no longer available.")
+            .When(command => command.BadgeId.HasValue);
     }
 }

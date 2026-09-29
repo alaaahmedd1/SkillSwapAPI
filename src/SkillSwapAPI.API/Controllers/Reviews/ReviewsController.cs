@@ -22,7 +22,8 @@ public sealed class ReviewsController : ApiBaseController
                 userId,
                 request.RevieweeId,
                 request.Rating,
-                request.Comment), ct);
+                request.Comment,
+                request.BadgeId), ct);
 
         if (result.IsError)
         {
@@ -37,4 +38,5 @@ public sealed record SubmitReviewRequest(
     Guid SwapRequestId,
     Guid RevieweeId,
     int Rating,
-    string? Comment);
+    string? Comment,
+    int? BadgeId);
