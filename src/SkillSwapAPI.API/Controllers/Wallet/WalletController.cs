@@ -5,6 +5,7 @@ using SkillSwapAPI.Application.Features.Wallet.Queries.GetMyWallet;
 using SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactionDetails;
 using SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactionReceipt;
 using SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactions;
+using SkillSwapAPI.Domain.Common.Results;
 
 namespace SkillSwapAPI.API.Controllers.Wallet
 {
@@ -71,7 +72,7 @@ namespace SkillSwapAPI.API.Controllers.Wallet
                 new GetWalletTransactionDetailsQuery(userId, id),
                 cancellationToken);
 
-            return Ok(result);
+            return HandleResult(result);
         }
 
 
@@ -85,14 +86,19 @@ namespace SkillSwapAPI.API.Controllers.Wallet
                 return Unauthorized();
             }
 
-            var pdf = await _sender.Send(
+            var result = await _sender.Send(
                 new GetWalletTransactionReceiptQuery(userId, id),
                 cancellationToken);
 
+            if (!result.IsSuccess)
+            {
+                return HandleResult(result);
+            }
+
             return File(
-                pdf,
+                result.Value,
                 "application/pdf",
-                $"time-receipt-{id}.pdf");
+                $"wallet-transaction-{id}.pdf");
         }
     }
 }

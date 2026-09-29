@@ -1,6 +1,8 @@
 ﻿using MediatR;
+using SkillSwapAPI.Application.Common.Errors;
 using SkillSwapAPI.Application.Common.Interfaces.UnitOfWork;
 using SkillSwapAPI.Application.Features.Wallet.Dtos;
+using SkillSwapAPI.Domain.Common.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +15,7 @@ namespace SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactionD
     public sealed class GetWalletTransactionDetailsQueryHandler
         : IRequestHandler<
             GetWalletTransactionDetailsQuery,
-            WalletTransactionDto>
+            Result<WalletTransactionDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
 
@@ -23,7 +25,7 @@ namespace SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactionD
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<WalletTransactionDto> Handle(
+        public async Task<Result<WalletTransactionDto>> Handle(
             GetWalletTransactionDetailsQuery request,
             CancellationToken cancellationToken)
         {
@@ -34,8 +36,7 @@ namespace SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactionD
 
             if (wallet is null)
             {
-                throw new KeyNotFoundException(
-                    "Wallet was not found.");
+                return ApplicationErrors.Wallet.WalletNotFound;
             }
 
             var transaction = await _unitOfWork
@@ -45,8 +46,7 @@ namespace SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactionD
             if (transaction is null ||
                 transaction.WalletId != wallet.Id)
             {
-                throw new KeyNotFoundException(
-                    "Wallet transaction was not found.");
+                return ApplicationErrors.Wallet.TransactionNotFound;
             }
 
             return new WalletTransactionDto(

@@ -188,5 +188,17 @@ public static class ApplicationErrors
         public static readonly Error ProposalNotPending =
             Error.Conflict("Scheduling.ProposalNotPending", "Only a proposed schedule can be accepted or rejected.");
     }
+public static class Wallet
+{
+    public static readonly Error WalletNotFound =
+        Error.NotFound(
+            "Wallet.NotFound",
+            "Wallet was not found.");
+
+    public static readonly Error TransactionNotFound =
+        Error.NotFound(
+            "Wallet.TransactionNotFound",
+            "Wallet transaction was not found.");
+}
 
 }

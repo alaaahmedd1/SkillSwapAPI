@@ -1,12 +1,14 @@
 ﻿using MediatR;
+using SkillSwapAPI.Application.Common.Errors;
 using SkillSwapAPI.Application.Common.Interfaces.Services;
 using SkillSwapAPI.Application.Common.Interfaces.UnitOfWork;
+using SkillSwapAPI.Domain.Common.Results;
 
 
 namespace SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactionReceipt
 {
     public sealed class GetWalletTransactionReceiptQueryHandler
-          : IRequestHandler<GetWalletTransactionReceiptQuery, byte[]>
+          : IRequestHandler<GetWalletTransactionReceiptQuery, Result<byte[]>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPdfService _pdfService;
@@ -18,7 +20,7 @@ namespace SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactionR
             _pdfService = pdfService;
         }
 
-        public async Task<byte[]> Handle(
+        public async Task<Result<byte[]>> Handle(
       GetWalletTransactionReceiptQuery request,
       CancellationToken cancellationToken)
         {
@@ -26,11 +28,9 @@ namespace SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactionR
 
             var wallet = await _unitOfWork.TimeWallets
                 .GetByUserIdAsync(userId, cancellationToken);
-
             if (wallet is null)
             {
-                throw new KeyNotFoundException(
-                    "Wallet was not found.");
+                return ApplicationErrors.Wallet.WalletNotFound;
             }
 
             var transaction = await _unitOfWork
@@ -38,10 +38,9 @@ namespace SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactionR
                 .GetByIdAsync(request.TransactionId);
 
             if (transaction is null ||
-                transaction.WalletId != wallet.Id)
+                      transaction.WalletId != wallet.Id)
             {
-                throw new KeyNotFoundException(
-                    "Wallet transaction was not found.");
+                return ApplicationErrors.Wallet.TransactionNotFound;
             }
 
             return _pdfService.GenerateTimeReceipt(

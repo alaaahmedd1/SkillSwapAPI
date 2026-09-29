@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using SkillSwapAPI.Domain.Common.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +11,5 @@ namespace SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactionR
     public sealed record GetWalletTransactionReceiptQuery(
       Guid UserId,
       Guid TransactionId)
-      : IRequest<byte[]>;
+      : IRequest<Result<byte[]>>;
 }
