@@ -1,6 +1,7 @@
 namespace SkillSwapAPI.API;
 
 using AspNetCoreRateLimit;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -18,6 +19,18 @@ public static class DependencyInjection
         services.AddSwaggerWithAuth();
         services.AddRateLimiting(configuration);
         services.AddHealthChecks();
+
+        services.AddHangfire(config =>
+        {
+            config
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(
+                    configuration.GetConnectionString("DefaultConnection"));
+        });
+
+        services.AddHangfireServer();
 
         var jwtSecretKey = configuration["JwtSettings:SecretKey"]
             ?? throw new InvalidOperationException("JwtSettings:SecretKey is missing from configuration.");
@@ -63,6 +76,7 @@ public static class DependencyInjection
             };
         });
 
+
         services.AddAuthorization();
 
         services.AddSignalR();
@@ -103,7 +117,7 @@ public static class DependencyInjection
         app.MapHub<LiveSessionHub>("/hubs/live-session");
         app.MapControllers();
         app.MapHealthChecks("/health");
-
+        app.UseHangfireDashboard("/hangfire");
         return app;
     }
 

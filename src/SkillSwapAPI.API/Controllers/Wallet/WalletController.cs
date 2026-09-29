@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SkillSwapAPI.Application.Features.Wallet.Commands.RequestWalletReceiptEmail;
 using SkillSwapAPI.Application.Features.Wallet.Queries.GetMyWallet;
 using SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactionDetails;
 using SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactionReceipt;
@@ -99,6 +100,33 @@ namespace SkillSwapAPI.API.Controllers.Wallet
                 result.Value,
                 "application/pdf",
                 $"wallet-transaction-{id}.pdf");
+        }
+
+        [HttpPost("transactions/{id:guid}/receipt/email")]
+        public async Task<IActionResult> EmailTransactionReceipt(
+    Guid id,
+    CancellationToken cancellationToken)
+        {
+            if (!TryGetCurrentUserId(out var userId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _sender.Send(
+                new RequestWalletReceiptEmailCommand(
+                    userId,
+                    id),
+                cancellationToken);
+
+            if (!result.IsSuccess)
+            {
+                return HandleResult(result);
+            }
+
+            return Accepted(new
+            {
+                message = "Receipt email has been queued."
+            });
         }
     }
 }

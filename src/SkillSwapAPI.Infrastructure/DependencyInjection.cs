@@ -12,11 +12,12 @@ using SkillSwapAPI.Application.Common.Interfaces.Payments;
 using SkillSwapAPI.Application.Common.Interfaces.Services;
 using SkillSwapAPI.Application.Common.Interfaces.UnitOfWork;
 using SkillSwapAPI.Application.Common.Settings;
+using SkillSwapAPI.Infrastructure.BackgroundJobs;
 using SkillSwapAPI.Infrastructure.Identity;
 using SkillSwapAPI.Infrastructure.Persistence.Data.DbContext;
 using SkillSwapAPI.Infrastructure.Services;
-using SkillSwapAPI.Infrastructure.Services.Pdf;
 using SkillSwapAPI.Infrastructure.Services.Payments;
+using SkillSwapAPI.Infrastructure.Services.Pdf;
 using SkillSwapAPI.Infrastructure.Settings;
 
 public static class DependencyInjection
@@ -93,7 +94,7 @@ public static class DependencyInjection
         services.AddScoped<ITimeLedgerService, TimeLedgerService>();
         services.AddScoped<IPaymentGatewayService, StripePaymentGatewayService>();
         services.AddScoped<ILiveSessionTokenProvider, LiveSessionTokenProvider>();
-
+        services.AddScoped<IWalletReceiptJob, WalletReceiptJob>();
         services.AddHttpClient("Facebook", (serviceProvider, client) =>
         {
             var settings =
