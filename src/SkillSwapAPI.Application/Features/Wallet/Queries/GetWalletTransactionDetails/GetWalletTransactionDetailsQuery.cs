@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 namespace SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactionDetails
 {
     public sealed record GetWalletTransactionDetailsQuery(
-        Guid TransactionId)
-        : IRequest<WalletTransactionDto>;
+       Guid UserId,
+       Guid TransactionId
+   ) : IRequest<WalletTransactionDto>;
 }

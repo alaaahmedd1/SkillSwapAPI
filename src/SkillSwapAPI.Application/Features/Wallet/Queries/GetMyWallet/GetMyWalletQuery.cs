@@ -8,6 +8,6 @@ using System.Threading.Tasks;
 
 namespace SkillSwapAPI.Application.Features.Wallet.Queries.GetMyWallet
 {
-    public sealed record GetMyWalletQuery
+    public sealed record GetMyWalletQuery(Guid UserId)
         : IRequest<WalletBalanceDto>;
 }

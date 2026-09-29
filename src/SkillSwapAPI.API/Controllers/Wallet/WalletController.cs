@@ -20,12 +20,18 @@ namespace SkillSwapAPI.API.Controllers.Wallet
             _sender = sender;
         }
 
+
         [HttpGet("me")]
         public async Task<IActionResult> GetMyWallet(
             CancellationToken cancellationToken)
         {
+            if (!TryGetCurrentUserId(out var userId))
+            {
+                return Unauthorized();
+            }
+
             var result = await _sender.Send(
-                new GetMyWalletQuery(),
+                new GetMyWalletQuery(userId),
                 cancellationToken);
 
             return Ok(result);
@@ -36,8 +42,15 @@ namespace SkillSwapAPI.API.Controllers.Wallet
             [FromQuery] GetWalletTransactionsQuery query,
             CancellationToken cancellationToken)
         {
+            if (!TryGetCurrentUserId(out var userId))
+            {
+                return Unauthorized();
+            }
+
+            var request = query with { UserId = userId };
+
             var result = await _sender.Send(
-                query,
+                request,
                 cancellationToken);
 
             return Ok(result);
@@ -46,23 +59,34 @@ namespace SkillSwapAPI.API.Controllers.Wallet
 
         [HttpGet("transactions/{id:guid}")]
         public async Task<IActionResult> GetTransactionDetails(
-    Guid id,
-    CancellationToken cancellationToken)
+         Guid id,
+         CancellationToken cancellationToken)
         {
+            if (!TryGetCurrentUserId(out var userId))
+            {
+                return Unauthorized();
+            }
+
             var result = await _sender.Send(
-                new GetWalletTransactionDetailsQuery(id),
+                new GetWalletTransactionDetailsQuery(userId, id),
                 cancellationToken);
 
             return Ok(result);
         }
 
+
         [HttpGet("transactions/{id:guid}/receipt")]
         public async Task<IActionResult> GetTransactionReceipt(
-            Guid id,
-            CancellationToken cancellationToken)
+    Guid id,
+    CancellationToken cancellationToken)
         {
+            if (!TryGetCurrentUserId(out var userId))
+            {
+                return Unauthorized();
+            }
+
             var pdf = await _sender.Send(
-                new GetWalletTransactionReceiptQuery(id),
+                new GetWalletTransactionReceiptQuery(userId, id),
                 cancellationToken);
 
             return File(

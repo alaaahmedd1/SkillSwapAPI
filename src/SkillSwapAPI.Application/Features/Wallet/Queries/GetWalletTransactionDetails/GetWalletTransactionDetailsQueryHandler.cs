@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using SkillSwapAPI.Application.Common.Interfaces.Identity;
 using SkillSwapAPI.Application.Common.Interfaces.UnitOfWork;
 using SkillSwapAPI.Application.Features.Wallet.Dtos;
 using System;
@@ -17,21 +16,18 @@ namespace SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactionD
             WalletTransactionDto>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IUser _currentUser;
 
         public GetWalletTransactionDetailsQueryHandler(
-            IUnitOfWork unitOfWork,
-            IUser currentUser)
+            IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _currentUser = currentUser;
         }
 
         public async Task<WalletTransactionDto> Handle(
             GetWalletTransactionDetailsQuery request,
             CancellationToken cancellationToken)
         {
-            var userId = _currentUser.Id;
+            var userId = request.UserId;
 
             var wallet = await _unitOfWork.TimeWallets
                 .GetByUserIdAsync(userId, cancellationToken);

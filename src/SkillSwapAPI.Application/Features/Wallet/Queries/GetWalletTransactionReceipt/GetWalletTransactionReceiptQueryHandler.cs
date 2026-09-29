@@ -1,12 +1,7 @@
 ﻿using MediatR;
-using SkillSwapAPI.Application.Common.Interfaces.Identity;
 using SkillSwapAPI.Application.Common.Interfaces.Services;
 using SkillSwapAPI.Application.Common.Interfaces.UnitOfWork;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactionReceipt
 {
@@ -15,22 +10,19 @@ namespace SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactionR
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPdfService _pdfService;
-        private readonly IUser _currentUser;
         public GetWalletTransactionReceiptQueryHandler(
             IUnitOfWork unitOfWork,
-            IPdfService pdfService,
-            IUser currentUser)
+            IPdfService pdfService)
         {
             _unitOfWork = unitOfWork;
             _pdfService = pdfService;
-            _currentUser = currentUser;
         }
 
         public async Task<byte[]> Handle(
       GetWalletTransactionReceiptQuery request,
       CancellationToken cancellationToken)
         {
-            var userId = _currentUser.Id;
+            var userId = request.UserId;
 
             var wallet = await _unitOfWork.TimeWallets
                 .GetByUserIdAsync(userId, cancellationToken);

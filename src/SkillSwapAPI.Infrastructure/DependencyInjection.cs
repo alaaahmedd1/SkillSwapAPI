@@ -85,7 +85,6 @@ public static class DependencyInjection
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<ITokenProvider, TokenProvider>();
         services.AddHttpContextAccessor();
-        services.AddScoped<IUser, CurrentUser>();
         services.AddScoped<ISocialAuthService, SocialAuthService>();
         services.AddScoped<IOtpService, OtpService>();
         services.AddScoped<IEmailService, GmailEmailService>();
