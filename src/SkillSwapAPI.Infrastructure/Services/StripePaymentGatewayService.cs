@@ -1,5 +1,6 @@
 ﻿using SkillSwapAPI.Application.Common.Interfaces.Payments;
 using Stripe;
+using static SkillSwapAPI.Application.Common.Interfaces.Payments.IPaymentGatewayService;
 
 namespace SkillSwapAPI.Infrastructure.Services.Payments;
 
@@ -31,5 +32,27 @@ public sealed class StripePaymentGatewayService : IPaymentGatewayService
         var intent = await service.CreateAsync(options, cancellationToken: ct);
 
         return (intent.Id, intent.ClientSecret);
+    }
+
+    public PaymentWebhookEvent ProcessWebhookEvent(string jsonPayload, string stripeSignature, string webhookSecret)
+    {
+        var stripeEvent = Stripe.EventUtility.ConstructEvent(
+            jsonPayload,
+            stripeSignature,
+            webhookSecret);
+
+        if (stripeEvent.Data.Object is Stripe.PaymentIntent paymentIntent)
+        {
+            bool isSuccess = stripeEvent.Type == "payment_intent.succeeded";
+            string? failureReason = isSuccess ? null : paymentIntent.LastPaymentError?.Message;
+
+            return new PaymentWebhookEvent(
+                stripeEvent.Type,
+                paymentIntent.Id,
+                isSuccess,
+                failureReason);
+        }
+
+        return new PaymentWebhookEvent(stripeEvent.Type, string.Empty, false, "Unhandled event type");
     }
 }
