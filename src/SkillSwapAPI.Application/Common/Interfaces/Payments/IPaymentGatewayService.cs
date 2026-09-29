@@ -8,4 +8,12 @@ public interface IPaymentGatewayService
         Guid userId,
         Guid packageId,
         CancellationToken ct = default);
+
+    PaymentWebhookEvent ProcessWebhookEvent(string jsonPayload, string stripeSignature, string webhookSecret);
+
+    public record PaymentWebhookEvent(
+        string EventType,
+        string PaymentIntentId,
+        bool IsSuccess,
+        string? FailureReason);
 }
