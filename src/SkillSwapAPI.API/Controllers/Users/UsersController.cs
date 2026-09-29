@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SkillSwapAPI.Application.Features.Badges.Queries.GetUserBadges;
 using SkillSwapAPI.Application.Features.Reviews.Queries.GetUserReviews;
 using SkillSwapAPI.Application.Features.Users.Queries.SearchUsers;
 
@@ -20,6 +21,12 @@ public sealed class UsersController : ApiBaseController
     {
         return HandleResult(await Mediator.Send(
             new GetUserReviewsQuery(userId, request.PageNumber, request.PageSize), ct));
+    }
+
+    [HttpGet("{userId:guid}/badges")]
+    public async Task<IActionResult> GetUserBadges(Guid userId, CancellationToken ct)
+    {
+        return HandleResult(await Mediator.Send(new GetUserBadgesQuery(userId), ct));
     }
 }
 

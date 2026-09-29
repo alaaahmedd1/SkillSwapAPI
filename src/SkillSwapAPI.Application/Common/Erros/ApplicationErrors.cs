@@ -151,4 +151,12 @@ public static class ApplicationErrors
         public static readonly Error SettlementFailed =
             Error.Conflict("LiveSessions.SettlementFailed", "Session time could not be settled. Please retry ending the session.");
     }
+
+    public static class Badges
+    {
+        public static readonly Error BadgeNotFound =
+            Error.NotFound("Badges.BadgeNotFound", "The selected badge was not found or is no longer available.");
+        public static readonly Error BadgeAlreadyAwarded =
+            Error.Conflict("Badges.BadgeAlreadyAwarded", "A badge has already been awarded for this review.");
+    }
 }
