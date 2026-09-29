@@ -46,4 +46,66 @@ public sealed class GmailEmailService(
             return false;
         }
     }
+
+    public async Task<bool> SendWithAttachmentAsync(
+        string to,
+        string subject,
+        string htmlBody,
+        byte[] attachment,
+        string attachmentFileName,
+        string contentType,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            using var client = new SmtpClient(
+                _settings.SmtpServer,
+                _settings.SmtpPort)
+            {
+                EnableSsl = true,
+                Credentials = new NetworkCredential(
+                    _settings.SenderEmail,
+                    _settings.SenderPassword)
+            };
+
+            using var mail = new MailMessage
+            {
+                From = new MailAddress(
+                    _settings.SenderEmail,
+                    _settings.SenderName),
+                Subject = subject,
+                Body = htmlBody,
+                IsBodyHtml = true,
+            };
+
+            mail.To.Add(to);
+
+            using var stream = new MemoryStream(attachment);
+
+            var mailAttachment = new Attachment(
+                stream,
+                attachmentFileName,
+                contentType);
+
+            mail.Attachments.Add(mailAttachment);
+
+            await client.SendMailAsync(mail, ct);
+
+            logger.LogInformation(
+                "Email with attachment sent to {To}. Attachment: {FileName}",
+                to,
+                attachmentFileName);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Failed to send email with attachment to {To}",
+                to);
+
+            return false;
+        }
+    }
 }

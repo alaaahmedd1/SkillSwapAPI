@@ -7,5 +7,7 @@ namespace SkillSwapAPI.Application.Common.Interfaces.Notifications
     public interface IEmailTempService
     {
         string GetOtpTemplate(string otp);
+
+        string GetReceiptTemplate(string userName, string transactionReference, string transactionDate);
     }
 }

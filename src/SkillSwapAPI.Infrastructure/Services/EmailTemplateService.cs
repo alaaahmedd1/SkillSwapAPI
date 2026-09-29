@@ -27,5 +27,24 @@ namespace SkillSwapAPI.Infrastructure.Services
 
             return html;
         }
+
+        public string GetReceiptTemplate(
+            string userName,
+            string transactionReference,
+            string transactionDate)
+        {
+            var path = Path.Combine(
+                _env.ContentRootPath,
+                "Templates/Emails/receipt-email.html");
+
+            var html = File.ReadAllText(path);
+
+            html = html.Replace("{{USER_NAME}}", userName)
+                       .Replace("{{TRANSACTION_REFERENCE}}", transactionReference)
+                       .Replace("{{TRANSACTION_DATE}}", transactionDate)
+                       .Replace("{{APP_NAME}}", "SkillSwapAPI");
+
+            return html;
+        }
     }
 }
