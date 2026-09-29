@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using SkillSwapAPI.Application.Common.Interfaces.Identity;
 using SkillSwapAPI.Application.Common.Interfaces.Payments;
 using SkillSwapAPI.Application.Common.Interfaces.UnitOfWork;
 using SkillSwapAPI.Application.Features.Payments.Dtos;
@@ -10,13 +9,12 @@ namespace SkillSwapAPI.Application.Features.Payments.Commands.InitiateCheckout;
 
 public sealed class InitiateCheckoutCommandHandler(
     IUnitOfWork unitOfWork,
-    IUser currentUser,
     IPaymentGatewayService paymentGatewayService)
     : IRequestHandler<InitiateCheckoutCommand, CheckoutResponseDto>
 {
     public async Task<CheckoutResponseDto> Handle(InitiateCheckoutCommand command, CancellationToken ct)
     {
-        var userId = currentUser.Id;
+        var userId = command.UserId;
 
         var package = await unitOfWork.CreditPackages.GetByIdAsync(command.PackageId);
         if (package is null || !package.IsActive)

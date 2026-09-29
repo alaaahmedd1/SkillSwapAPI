@@ -5,6 +5,7 @@ using SkillSwapAPI.Application.Features.Wallet.Queries.GetMyWallet;
 using SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactionDetails;
 using SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactionReceipt;
 using SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactions;
+using SkillSwapAPI.Domain.Common.Results;
 
 namespace SkillSwapAPI.API.Controllers.Wallet
 {
@@ -20,12 +21,18 @@ namespace SkillSwapAPI.API.Controllers.Wallet
             _sender = sender;
         }
 
+
         [HttpGet("me")]
         public async Task<IActionResult> GetMyWallet(
             CancellationToken cancellationToken)
         {
+            if (!TryGetCurrentUserId(out var userId))
+            {
+                return Unauthorized();
+            }
+
             var result = await _sender.Send(
-                new GetMyWalletQuery(),
+                new GetMyWalletQuery(userId),
                 cancellationToken);
 
             return Ok(result);
@@ -36,8 +43,15 @@ namespace SkillSwapAPI.API.Controllers.Wallet
             [FromQuery] GetWalletTransactionsQuery query,
             CancellationToken cancellationToken)
         {
+            if (!TryGetCurrentUserId(out var userId))
+            {
+                return Unauthorized();
+            }
+
+            var request = query with { UserId = userId };
+
             var result = await _sender.Send(
-                query,
+                request,
                 cancellationToken);
 
             return Ok(result);
@@ -46,29 +60,45 @@ namespace SkillSwapAPI.API.Controllers.Wallet
 
         [HttpGet("transactions/{id:guid}")]
         public async Task<IActionResult> GetTransactionDetails(
-    Guid id,
-    CancellationToken cancellationToken)
+         Guid id,
+         CancellationToken cancellationToken)
         {
+            if (!TryGetCurrentUserId(out var userId))
+            {
+                return Unauthorized();
+            }
+
             var result = await _sender.Send(
-                new GetWalletTransactionDetailsQuery(id),
+                new GetWalletTransactionDetailsQuery(userId, id),
                 cancellationToken);
 
-            return Ok(result);
+            return HandleResult(result);
         }
+
 
         [HttpGet("transactions/{id:guid}/receipt")]
         public async Task<IActionResult> GetTransactionReceipt(
-            Guid id,
-            CancellationToken cancellationToken)
+    Guid id,
+    CancellationToken cancellationToken)
         {
-            var pdf = await _sender.Send(
-                new GetWalletTransactionReceiptQuery(id),
+            if (!TryGetCurrentUserId(out var userId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _sender.Send(
+                new GetWalletTransactionReceiptQuery(userId, id),
                 cancellationToken);
 
+            if (!result.IsSuccess)
+            {
+                return HandleResult(result);
+            }
+
             return File(
-                pdf,
+                result.Value,
                 "application/pdf",
-                $"time-receipt-{id}.pdf");
+                $"wallet-transaction-{id}.pdf");
         }
     }
 }

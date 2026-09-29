@@ -22,7 +22,13 @@ public sealed class PaymentsController(ISender sender) : ApiBaseController
     [HttpPost("checkout")]
     public async Task<IActionResult> Checkout([FromBody] InitiateCheckoutCommand command, CancellationToken ct)
     {
-        var result = await sender.Send(command, ct);
+        if (!TryGetCurrentUserId(out var userId))
+        {
+            return Unauthorized();
+        }
+        var request = command with { UserId = userId };
+
+        var result = await sender.Send(request, ct);
         return Ok(result);
     }
 
