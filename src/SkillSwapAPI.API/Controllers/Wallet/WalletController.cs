@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SkillSwapAPI.Application.Features.Wallet.Queries.GetMyWallet;
 using SkillSwapAPI.Application.Features.Wallet.Queries.GetWalletTransactionDetails;
@@ -45,7 +44,7 @@ namespace SkillSwapAPI.API.Controllers.Wallet
         }
 
 
-        [HttpGet("transactions/{id}")]
+        [HttpGet("transactions/{id:guid}")]
         public async Task<IActionResult> GetTransactionDetails(
     Guid id,
     CancellationToken cancellationToken)
@@ -57,7 +56,7 @@ namespace SkillSwapAPI.API.Controllers.Wallet
             return Ok(result);
         }
 
-        [HttpGet("transactions/{id}/receipt")]
+        [HttpGet("transactions/{id:guid}/receipt")]
         public async Task<IActionResult> GetTransactionReceipt(
             Guid id,
             CancellationToken cancellationToken)

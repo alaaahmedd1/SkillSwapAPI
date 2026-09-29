@@ -93,6 +93,7 @@ public static class DependencyInjection
         services.AddScoped<IPdfService, QuestPdfService>();
         services.AddScoped<ITimeLedgerService, TimeLedgerService>();
         services.AddScoped<IPaymentGatewayService, StripePaymentGatewayService>();
+        services.AddScoped<ILiveSessionTokenProvider, LiveSessionTokenProvider>();
 
         services.AddHttpClient("Facebook", (serviceProvider, client) =>
         {

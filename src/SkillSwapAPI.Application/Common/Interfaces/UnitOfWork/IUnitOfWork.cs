@@ -19,6 +19,8 @@ namespace SkillSwapAPI.Application.Common.Interfaces.UnitOfWork
         ITimeLedgerTransactionRepository TimeLedgerTransactions { get; }
         ICreditPackageRepository CreditPackages { get; }
         IPaymentOrderRepository PaymentOrders { get; }
+        ILiveSessionRoomRepository LiveSessionRooms { get; }
+        IWhiteboardSnapshotRepository WhiteboardSnapshots { get; }
         Task<int> CompleteAsync(CancellationToken cancellationToken = default);
         Task<IDbContextTransaction> BeginTransactionAsync(
     CancellationToken cancellationToken = default);
