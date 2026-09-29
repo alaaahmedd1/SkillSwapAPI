@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SkillSwapAPI.Application.Features.SessionProposals.Commands.AcceptProposal;
+using SkillSwapAPI.Application.Features.SessionProposals.Commands.CreateProposal;
+using SkillSwapAPI.Application.Features.SessionProposals.Commands.RejectProposal;
 using SkillSwapAPI.Application.Features.SwapRequests.Commands.AcceptSwapRequest;
 using SkillSwapAPI.Application.Features.SwapRequests.Commands.CancelSwapRequest;
 using SkillSwapAPI.Application.Features.SwapRequests.Commands.CompleteSwapRequest;
@@ -106,6 +109,53 @@ public sealed class SwapRequestsController : ApiBaseController
 
         return HandleResult(await Mediator.Send(new CompleteSwapRequestCommand(swapRequestId, userId), ct));
     }
+
+    [HttpPost("{id:guid}/proposals")]
+    public async Task<IActionResult> CreateProposal(Guid id, [FromBody] CreateProposalRequest request, CancellationToken ct)
+    {
+        if (!TryGetCurrentUserId(out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await Mediator.Send(
+            new CreateProposalCommand(
+                id,
+                userId,
+                request.ScheduledDate,
+                request.StartTime,
+                request.EndTime,
+                request.DurationMinutes), ct);
+
+        if (result.IsError)
+        {
+            return HandleResult(result);
+        }
+
+        return StatusCode(StatusCodes.Status201Created, result.Value);
+    }
+
+    [HttpPut("{id:guid}/proposals/{proposalId:guid}/accept")]
+    public async Task<IActionResult> AcceptProposal(Guid id, Guid proposalId, CancellationToken ct)
+    {
+        if (!TryGetCurrentUserId(out var userId))
+        {
+            return Unauthorized();
+        }
+
+        return HandleResult(await Mediator.Send(new AcceptProposalCommand(id, proposalId, userId), ct));
+    }
+
+    [HttpPut("{id:guid}/proposals/{proposalId:guid}/reject")]
+    public async Task<IActionResult> RejectProposal(Guid id, Guid proposalId, CancellationToken ct)
+    {
+        if (!TryGetCurrentUserId(out var userId))
+        {
+            return Unauthorized();
+        }
+
+        return HandleResult(await Mediator.Send(new RejectProposalCommand(id, proposalId, userId), ct));
+    }
 }
 
 public sealed record CreateSwapRequestRequest(
@@ -118,3 +168,9 @@ public sealed record GetSwapRequestsRequest(
     SwapRequestStatus? Status = null,
     int PageNumber = 1,
     int PageSize = 10);
+
+public sealed record CreateProposalRequest(
+    DateOnly ScheduledDate,
+    TimeOnly StartTime,
+    TimeOnly EndTime,
+    int DurationMinutes);

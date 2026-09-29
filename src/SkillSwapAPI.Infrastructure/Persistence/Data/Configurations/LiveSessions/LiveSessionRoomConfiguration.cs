@@ -11,8 +11,10 @@ public sealed class LiveSessionRoomConfiguration : IEntityTypeConfiguration<Live
     {
         builder.ToTable("LiveSessionRooms");
         builder.HasKey(room => room.Id);
-        builder.Property(room => room.RoomToken).HasMaxLength(256).IsRequired();
-        builder.Property(room => room.Status).IsRequired();
+        builder.Property(room => room.RoomToken).IsRequired().HasMaxLength(128);
+        builder.Property(room => room.ScheduledStartTime).IsRequired();
+        builder.Property(room => room.DurationSeconds).IsRequired();
+        builder.Property(room => room.Status).HasConversion<int>().IsRequired();
         builder.HasIndex(room => room.SwapRequestId).IsUnique();
         builder.HasOne<SwapRequest>()
             .WithMany()

@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using SkillSwapAPI.Application.Common.Interfaces.Repos;
 using SkillSwapAPI.Application.Common.Interfaces.UnitOfWork;
-using SkillSwapAPI.Domain.Modules.Chat.Entities;
-using SkillSwapAPI.Domain.Modules.Wallet.Entities;
 using SkillSwapAPI.Infrastructure.Persistence.Data.DbContext;
 using SkillSwapAPI.Infrastructure.Repositories;
 
@@ -28,6 +26,7 @@ namespace SkillSwapAPI.Infrastructure.UnitOfWork
             CreditPackages = new CreditPackageRepository(_context);
             PaymentOrders = new PaymentOrderRepository(_context);
             LiveSessionRooms = new LiveSessionRoomRepository(_context);
+            SessionProposals = new SessionProposalRepository(_context);
             WhiteboardSnapshots = new WhiteboardSnapshotRepository(_context);
             Badges = new BadgeRepository(_context);
             UserBadgeAwards = new UserBadgeAwardRepository(_context);
@@ -46,6 +45,7 @@ namespace SkillSwapAPI.Infrastructure.UnitOfWork
         public ICreditPackageRepository CreditPackages { get; }
         public IPaymentOrderRepository PaymentOrders { get; }
         public ILiveSessionRoomRepository LiveSessionRooms { get; }
+        public ISessionProposalRepository SessionProposals { get; }
         public IWhiteboardSnapshotRepository WhiteboardSnapshots { get; }
         public IBadgeRepository Badges { get; }
         public IUserBadgeAwardRepository UserBadgeAwards { get; }

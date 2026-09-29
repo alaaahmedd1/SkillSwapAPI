@@ -20,6 +20,7 @@ namespace SkillSwapAPI.Application.Common.Interfaces.UnitOfWork
         ICreditPackageRepository CreditPackages { get; }
         IPaymentOrderRepository PaymentOrders { get; }
         ILiveSessionRoomRepository LiveSessionRooms { get; }
+        ISessionProposalRepository SessionProposals { get; }
         IWhiteboardSnapshotRepository WhiteboardSnapshots { get; }
         IBadgeRepository Badges { get; }
         IUserBadgeAwardRepository UserBadgeAwards { get; }
