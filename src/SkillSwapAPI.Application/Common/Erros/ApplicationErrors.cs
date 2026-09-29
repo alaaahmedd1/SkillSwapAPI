@@ -159,4 +159,34 @@ public static class ApplicationErrors
         public static readonly Error BadgeAlreadyAwarded =
             Error.Conflict("Badges.BadgeAlreadyAwarded", "A badge has already been awarded for this review.");
     }
+
+    public static class Scheduling
+    {
+        public static readonly Error SwapNotFound =
+            Error.NotFound("Scheduling.SwapNotFound", "The swap request was not found.");
+        public static readonly Error NotParticipant =
+            Error.Forbidden("Scheduling.NotParticipant", "You are not a participant in this swap request.");
+        public static readonly Error InvalidSwapState =
+            Error.Conflict("Scheduling.InvalidSwapState", "This swap request cannot receive a schedule proposal in its current state.");
+        public static readonly Error InvalidDuration =
+            Error.Validation("Scheduling.InvalidDuration", "Duration must be exactly 30, 60, or 120 minutes.");
+        public static readonly Error TimeMismatch =
+            Error.Validation("Scheduling.TimeMismatch", "End time must equal start time plus the declared duration.");
+        public static readonly Error DateInPast =
+            Error.Validation("Scheduling.DateInPast", "The scheduled date cannot be in the past.");
+        public static readonly Error ActiveProposalExists =
+            Error.Conflict("Scheduling.ActiveProposalExists", "An active schedule proposal already exists for this swap request.");
+        public static readonly Error ProposalNotFound =
+            Error.NotFound("Scheduling.ProposalNotFound", "The session proposal was not found.");
+
+        public static readonly Error CannotAcceptOwnProposal =
+            Error.Forbidden("Scheduling.CannotAcceptOwnProposal", "The proposer cannot accept or reject their own proposal.");
+
+        public static readonly Error CannotRejectOwnProposal =
+        Error.Validation("Scheduling.CannotRejectOwnProposal", "You cannot reject your own proposal.");
+
+        public static readonly Error ProposalNotPending =
+            Error.Conflict("Scheduling.ProposalNotPending", "Only a proposed schedule can be accepted or rejected.");
+    }
+
 }

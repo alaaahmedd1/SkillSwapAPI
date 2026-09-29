@@ -10,6 +10,7 @@ using SkillSwapAPI.Domain.Modules.Chat.Entities;
 using SkillSwapAPI.Domain.Modules.LiveSessions.Entities;
 using SkillSwapAPI.Domain.Modules.Payments.Entities;
 using SkillSwapAPI.Domain.Modules.Reviews.Entities;
+using SkillSwapAPI.Domain.Modules.SessionProposals.Entities;
 using SkillSwapAPI.Domain.Modules.SwapRequests.Entities;
 using SkillSwapAPI.Domain.Modules.Users.Entities;
 using SkillSwapAPI.Domain.Modules.Wallet.Entities;
@@ -39,6 +40,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<CreditPackage> CreditPackages => Set<CreditPackage>();
     public DbSet<PaymentOrder> PaymentOrders => Set<PaymentOrder>();
     public DbSet<LiveSessionRoom> LiveSessionRooms => Set<LiveSessionRoom>();
+    public DbSet<SessionProposal> SessionProposals => Set<SessionProposal>();
     public DbSet<WhiteboardSnapshot> WhiteboardSnapshots => Set<WhiteboardSnapshot>();
     public DbSet<Badge> Badges => Set<Badge>();
     public DbSet<UserBadgeAward> UserBadgeAwards => Set<UserBadgeAward>();
