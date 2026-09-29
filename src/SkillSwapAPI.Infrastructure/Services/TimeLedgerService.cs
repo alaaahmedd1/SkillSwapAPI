@@ -20,6 +20,15 @@ namespace SkillSwapAPI.Infrastructure.Services
             _unitOfWork = unitOfWork;
         }
 
+        public async Task ValidateSettlementAsync(
+            Guid learnerId,
+            Guid teacherId,
+            int durationMinutes,
+            CancellationToken cancellationToken = default)
+        {
+            await GetValidatedWalletsAsync(learnerId, teacherId, durationMinutes, cancellationToken);
+        }
+
         public async Task SettleAsync(
      Guid learnerId,
      Guid teacherId,
@@ -60,33 +69,11 @@ namespace SkillSwapAPI.Infrastructure.Services
                     }
                 }
 
-                var learnerWallet = await _unitOfWork.TimeWallets
-                    .GetByUserIdAsync(
-                        learnerId,
-                        cancellationToken);
-
-                var teacherWallet = await _unitOfWork.TimeWallets
-                    .GetByUserIdAsync(
-                        teacherId,
-                        cancellationToken);
-
-                if (learnerWallet is null)
-                {
-                    throw new KeyNotFoundException(
-                        "Learner wallet was not found.");
-                }
-
-                if (teacherWallet is null)
-                {
-                    throw new KeyNotFoundException(
-                        "Teacher wallet was not found.");
-                }
-
-                if (learnerWallet.BalanceMinutes < durationMinutes)
-                {
-                    throw new InvalidOperationException(
-                        "Insufficient wallet balance.");
-                }
+                var (learnerWallet, teacherWallet) = await GetValidatedWalletsAsync(
+                    learnerId,
+                    teacherId,
+                    durationMinutes,
+                    cancellationToken);
 
                 var now = DateTimeOffset.UtcNow;
 
@@ -149,6 +136,43 @@ namespace SkillSwapAPI.Infrastructure.Services
                 throw;
             }
         }
+        private async Task<(TimeWallet Learner, TimeWallet Teacher)> GetValidatedWalletsAsync(
+            Guid learnerId,
+            Guid teacherId,
+            int durationMinutes,
+            CancellationToken cancellationToken)
+        {
+            var learnerWallet = await _unitOfWork.TimeWallets
+                .GetByUserIdAsync(
+                    learnerId,
+                    cancellationToken);
+
+            var teacherWallet = await _unitOfWork.TimeWallets
+                .GetByUserIdAsync(
+                    teacherId,
+                    cancellationToken);
+
+            if (learnerWallet is null)
+            {
+                throw new KeyNotFoundException(
+                    "Learner wallet was not found.");
+            }
+
+            if (teacherWallet is null)
+            {
+                throw new KeyNotFoundException(
+                    "Teacher wallet was not found.");
+            }
+
+            if (learnerWallet.BalanceMinutes < durationMinutes)
+            {
+                throw new InvalidOperationException(
+                    "Insufficient wallet balance.");
+            }
+
+            return (learnerWallet, teacherWallet);
+        }
+
         private static string GenerateReferenceCode()
         {
             return $"SWAP-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid():N}"[..50];

@@ -133,4 +133,22 @@ public static class ApplicationErrors
         public static readonly Error InvalidReviewee =
             Error.Validation("Reviews.InvalidReviewee", "The reviewee must be the other participant of the swap request.");
     }
+
+    public static class LiveSessions
+    {
+        public static readonly Error SwapNotAccepted =
+            Error.Conflict("LiveSessions.SwapNotAccepted", "Live sessions are only available for accepted swap requests.");
+        public static readonly Error NotParticipant =
+            Error.Forbidden("LiveSessions.NotParticipant", "You are not a participant in this swap request.");
+        public static readonly Error RoomNotFound =
+            Error.NotFound("LiveSessions.RoomNotFound", "Live session room not found. Join the session through the join endpoint first.");
+        public static readonly Error RoomAlreadyEnded =
+            Error.Conflict("LiveSessions.RoomAlreadyEnded", "This live session has already ended.");
+        public static readonly Error WalletNotFound =
+            Error.NotFound("LiveSessions.WalletNotFound", "A participant time wallet was not found.");
+        public static readonly Error InsufficientBalance =
+            Error.Conflict("LiveSessions.InsufficientBalance", "The learner's wallet does not have enough minutes to settle this session.");
+        public static readonly Error SettlementFailed =
+            Error.Conflict("LiveSessions.SettlementFailed", "Session time could not be settled. Please retry ending the session.");
+    }
 }

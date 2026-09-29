@@ -77,10 +77,13 @@ Modules/
 ├── Administration/    # AuditLog
 ├── Chat/              # Conversation, Message
 ├── Identity/          # RefreshToken, Role, SocialProvider
+├── LiveSessions/      # LiveSessionRoom, LiveSessionStatus, WhiteboardSnapshot
+├── Payments/          # CreditPackage, PaymentOrder, PaymentStatus
 ├── Reviews/           # Review, ReviewSubmittedEvent
 ├── Skills/            # Skill, SkillCategory
 ├── SwapRequests/      # SwapRequest, SwapRequestStatus
-└── Users/             # UserSkill, ProficiencyLevel, SkillType
+├── Users/             # UserSkill, ProficiencyLevel, SkillType
+└── Wallet/            # TimeWallet, TimeLedgerTransaction, TransactionType
 ```
 
 ### Application Layer (`SkillSwapAPI.Application`)
@@ -109,12 +112,15 @@ Orchestrates use cases using CQRS pattern with MediatR.
 **Common Interfaces:**
 - `ICurrentUserService` — Current authenticated user abstraction
 - `IUnitOfWork` / `IBaseRepository<T>` — Unit of Work and generic repository abstractions
-- Dedicated repositories (`ISwapRequestRepository`, `IUserSkillRepository`, `ISkillRepository`, `ISkillCategoryRepository`, `IRefreshTokenRepository`, `IConversationRepository`, `IMessageRepository`, `IReviewRepository`, `IAuditLogRepository`) — Purpose-built query methods extending `IBaseRepository<T>`; handlers call one repo method instead of writing queries inline
+- Dedicated repositories (`ISwapRequestRepository`, `IUserSkillRepository`, `ISkillRepository`, `ISkillCategoryRepository`, `IRefreshTokenRepository`, `IConversationRepository`, `IMessageRepository`, `IReviewRepository`, `IAuditLogRepository`, `ITimeWalletRepository`, `ITimeLedgerTransactionRepository`, `ICreditPackageRepository`, `IPaymentOrderRepository`, `ILiveSessionRoomRepository`, `IWhiteboardSnapshotRepository`) — Purpose-built query methods extending `IBaseRepository<T>`; handlers call one repo method instead of writing queries inline
 - `IJwtProvider` — JWT token generation/validation
 - `IEmailService` — Email sending abstraction
 - `ICacheService` — Distributed cache abstraction
 - `IDateTimeProvider` — Testable DateTime.UtcNow
 - `IChatConnectionManager` — Forcibly disconnects a user's active SignalR sessions (implemented in API over `HubCallerContext`)
+- `ILiveSessionTokenProvider` — Generates opaque WebRTC room tokens for live session rooms
+- `ITimeLedgerService` — Wallet ledger operations: atomic credit/debit of minutes with running-balance `TimeLedgerTransaction` records
+- `IPdfService` — Renders wallet transaction history receipts to PDF
 
 **Models:**
 - `PagedRequest` — Base for paginated queries
@@ -152,10 +158,12 @@ HTTP entry point with controllers, middleware, and DI orchestration.
 - `ApiBaseController` — Base controller with MediatR integration
 - `HealthController` — Health check endpoint
 - `AdminController` — `/api/v1/admin` endpoints (catalog creation, user listing, user status) guarded by `[Authorize(Roles = "Admin")]`
+- `LiveSessionsController` — `/api/v1/live-sessions` endpoints; `POST /{swapId}/join` validates swap membership and returns the room connection token (idempotent rejoin); `POST /{roomId}/end` terminates the room, computes elapsed duration, and settles rounded minutes between wallets (idempotent — no re-settlement on repeat)
 
 **Hubs:**
 - `ChatHub` — SignalR hub at `/hubs/chat` for real-time messaging; JWT-authenticated (token accepted from the `access_token` query string for WebSocket connections), authorizes swap membership and status (Accepted/Completed) per conversation, and broadcasts persisted messages to conversation groups
 - `ChatConnectionManager` — Singleton registry of live `HubCallerContext` per user; implements `IChatConnectionManager.DisconnectUserAsync` so admin suspension can abort active WebSocket sessions
+- `LiveSessionHub` — SignalR hub at `/hubs/live-session` for WebRTC signaling; authorizes swap participants per call through `GetLiveSessionAccessQuery` (swap Accepted, room exists and not ended) and relays SDP offers/answers and ICE candidates to the other peer in the `live-session-{swapId}` group. Also drives the session timer (`StartSession` sets InProgress + ActualStartTime and broadcasts `SessionStarted`; `SendSessionHeartbeat` returns server-computed elapsed seconds) and the whiteboard (`SendWhiteboardOperation` broadcasts ops to other participants; `SaveWhiteboardSnapshot` upserts the room's canvas snapshot)
 
 **Middleware:**
 - `GlobalExceptionMiddleware` — Catches unhandled exceptions, returns ProblemDetails

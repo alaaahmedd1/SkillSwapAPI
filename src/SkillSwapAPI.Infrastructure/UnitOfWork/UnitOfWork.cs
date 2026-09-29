@@ -27,6 +27,8 @@ namespace SkillSwapAPI.Infrastructure.UnitOfWork
             TimeLedgerTransactions = new TimeLedgerTransactionRepository(_context);
             CreditPackages = new CreditPackageRepository(_context);
             PaymentOrders = new PaymentOrderRepository(_context);
+            LiveSessionRooms = new LiveSessionRoomRepository(_context);
+            WhiteboardSnapshots = new WhiteboardSnapshotRepository(_context);
         }
         public IRefreshTokenRepository RefreshTokens { get; private set; }
         public ISkillCategoryRepository SkillCategories { get; private set; }
@@ -41,6 +43,8 @@ namespace SkillSwapAPI.Infrastructure.UnitOfWork
         public ITimeLedgerTransactionRepository TimeLedgerTransactions { get; }
         public ICreditPackageRepository CreditPackages { get; }
         public IPaymentOrderRepository PaymentOrders { get; }
+        public ILiveSessionRoomRepository LiveSessionRooms { get; }
+        public IWhiteboardSnapshotRepository WhiteboardSnapshots { get; }
 
         public async Task<int> CompleteAsync(
             CancellationToken cancellationToken = default)

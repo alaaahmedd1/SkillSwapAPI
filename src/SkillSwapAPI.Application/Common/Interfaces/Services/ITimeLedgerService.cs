@@ -15,6 +15,12 @@ namespace SkillSwapAPI.Application.Common.Interfaces.Services
             int durationMinutes,
             Guid? swapRequestId,
             CancellationToken cancellationToken = default);
+
+        Task ValidateSettlementAsync(
+            Guid learnerId,
+            Guid teacherId,
+            int durationMinutes,
+            CancellationToken cancellationToken = default);
     }
 
 }

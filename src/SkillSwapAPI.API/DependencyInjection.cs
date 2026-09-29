@@ -100,6 +100,7 @@ public static class DependencyInjection
         app.UseAuthorization();
         app.UseIpRateLimiting();
         app.MapHub<ChatHub>("/hubs/chat");
+        app.MapHub<LiveSessionHub>("/hubs/live-session");
         app.MapControllers();
         app.MapHealthChecks("/health");
 
