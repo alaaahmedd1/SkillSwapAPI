@@ -32,6 +32,8 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<TimeWallet> TimeWallets => Set<TimeWallet>();
+    public DbSet<TimeLedgerTransaction> TimeLedgerTransactions
+    => Set<TimeLedgerTransaction>();
     public DbSet<CreditPackage> CreditPackages => Set<CreditPackage>();
     public DbSet<PaymentOrder> PaymentOrders => Set<PaymentOrder>();
 

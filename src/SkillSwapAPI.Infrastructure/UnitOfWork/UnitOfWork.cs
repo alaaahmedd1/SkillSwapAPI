@@ -1,6 +1,8 @@
+using Microsoft.EntityFrameworkCore.Storage;
 using SkillSwapAPI.Application.Common.Interfaces.Repos;
 using SkillSwapAPI.Application.Common.Interfaces.UnitOfWork;
 using SkillSwapAPI.Domain.Modules.Chat.Entities;
+using SkillSwapAPI.Domain.Modules.Wallet.Entities;
 using SkillSwapAPI.Infrastructure.Persistence.Data.DbContext;
 using SkillSwapAPI.Infrastructure.Repositories;
 
@@ -22,6 +24,7 @@ namespace SkillSwapAPI.Infrastructure.UnitOfWork
             Reviews = new ReviewRepository(_context);
             AuditLogs = new AuditLogRepository(_context);
             TimeWallets = new TimeWalletRepository(_context);
+            TimeLedgerTransactions = new TimeLedgerTransactionRepository(_context);
             CreditPackages = new CreditPackageRepository(_context);
             PaymentOrders = new PaymentOrderRepository(_context);
         }
@@ -35,12 +38,21 @@ namespace SkillSwapAPI.Infrastructure.UnitOfWork
         public IReviewRepository Reviews { get; private set; }
         public IAuditLogRepository AuditLogs { get; private set; }
         public ITimeWalletRepository TimeWallets { get; }
+        public ITimeLedgerTransactionRepository TimeLedgerTransactions { get; }
         public ICreditPackageRepository CreditPackages { get; }
         public IPaymentOrderRepository PaymentOrders { get; }
 
-        public async Task<int> CompleteAsync(CancellationToken cancellationToken = default)
+        public async Task<int> CompleteAsync(
+            CancellationToken cancellationToken = default)
         {
             return await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.Database.BeginTransactionAsync(
+                cancellationToken);
         }
 
         public void Dispose()
