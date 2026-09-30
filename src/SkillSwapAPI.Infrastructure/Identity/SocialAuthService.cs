@@ -11,6 +11,7 @@ using SkillSwapAPI.Infrastructure.Settings;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
+using System.Text.Json.Serialization;
 
 namespace SkillSwapAPI.Infrastructure.Identity;
 
@@ -205,7 +206,10 @@ public sealed class SocialAuthService(
 
     private sealed class FacebookTokenData
     {
+        [JsonPropertyName("app_id")]
         public string AppId { get; init; } = string.Empty;
+
+        [JsonPropertyName("is_valid")]
         public bool IsValid { get; init; }
     }
 
