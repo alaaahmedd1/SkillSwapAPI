@@ -52,4 +52,56 @@ public class RegisterCommandValidatorTests
 
         Assert.False(result.IsValid);
     }
+
+    [Theory]
+    [InlineData("user@")]
+    [InlineData("@example.com")]
+    [InlineData("plainaddress")]
+    public void Validate_ShouldFail_WhenEmailFormatIsInvalid(string email)
+    {
+        var command = new RegisterCommand("Test", "User", email, "SecurePassword123!");
+        var result = _validator.Validate(command);
+
+        Assert.False(result.IsValid);
+    }
+
+    [Theory]
+    [InlineData(" ", "User", "user@example.com", "SecurePassword123!")]
+    [InlineData("Test", " ", "user@example.com", "SecurePassword123!")]
+    [InlineData("Test", "User", " ", "SecurePassword123!")]
+    [InlineData("Test", "User", "user@example.com", " ")]
+    public void Validate_ShouldFail_WhenAnyFieldIsWhitespaceOnly(string firstName, string lastName, string email, string password)
+    {
+        var command = new RegisterCommand(firstName, lastName, email, password);
+        var result = _validator.Validate(command);
+
+        Assert.False(result.IsValid);
+    }
+
+    [Fact]
+    public void Validate_ShouldPass_WhenNamesAreExactlyFiftyCharacters()
+    {
+        var command = new RegisterCommand(new string('a', 50), new string('b', 50), "user@example.com", "SecurePassword123!");
+        var result = _validator.Validate(command);
+
+        Assert.True(result.IsValid);
+    }
+
+    [Fact]
+    public void Validate_ShouldPass_WhenPasswordIsExactlyEightCharacters()
+    {
+        var command = new RegisterCommand("Test", "User", "user@example.com", "Abcdef1!");
+        var result = _validator.Validate(command);
+
+        Assert.True(result.IsValid);
+    }
+
+    [Fact]
+    public void Validate_ShouldPass_WhenPasswordHasNoLowercaseLetters()
+    {
+        var command = new RegisterCommand("Test", "User", "user@example.com", "ABCDEFG1!");
+        var result = _validator.Validate(command);
+
+        Assert.True(result.IsValid);
+    }
 }

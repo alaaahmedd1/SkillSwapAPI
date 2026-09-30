@@ -27,7 +27,7 @@ public static class DependencyInjection
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
                 .UseSqlServerStorage(
-                    configuration.GetConnectionString("DefaultConnection"));
+                    configuration.GetConnectionString("HangfireConnection"));
         });
 
         services.AddHangfireServer();
