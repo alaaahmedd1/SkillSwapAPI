@@ -25,7 +25,17 @@ public sealed class GetGuestListingsQueryHandler
                 .ToList();
         }
 
-        var pagedResult = PagedResult<PublicListingDto>.Create(items, query.PageNumber, query.PageSize, items.Count);
+        var totalCount = items.Count;
+        var pageItems = items
+            .Skip((query.PageNumber - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .ToList();
+
+        var pagedResult = PagedResult<PublicListingDto>.Create(
+            pageItems,
+            totalCount,
+            query.PageNumber,
+            query.PageSize);
         return Task.FromResult<Result<PagedResult<PublicListingDto>>>(pagedResult);
     }
 }
