@@ -41,7 +41,14 @@ public sealed class JoinLiveSessionCommandHandler(
         {
             if (existingRoom.Status == LiveSessionStatus.Ended)
             {
-                return ApplicationErrors.LiveSessions.RoomAlreadyEnded;
+                existingRoom.Status = LiveSessionStatus.Waiting;
+                existingRoom.RoomToken = tokenProvider.GenerateRoomToken();
+                existingRoom.ScheduledStartTime = DateTimeOffset.UtcNow;
+                existingRoom.ActualStartTime = null;
+                existingRoom.ActualEndTime = null;
+                existingRoom.DurationSeconds = 0;
+                unitOfWork.LiveSessionRooms.Update(existingRoom);
+                await unitOfWork.CompleteAsync(ct);
             }
 
             return ToDto(existingRoom);

@@ -152,7 +152,7 @@ export class TransactionHistoryComponent implements OnInit {
   }
 
   private async load(reset: boolean): Promise<void> {
-    if (this.loading()) return;
+    if (!reset && this.loading()) return;
     this.loading.set(true);
     this.error.set('');
     const page = reset ? 1 : this.page + 1;

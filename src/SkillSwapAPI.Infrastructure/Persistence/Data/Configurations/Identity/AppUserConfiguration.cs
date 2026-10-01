@@ -20,5 +20,7 @@ public sealed class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
         builder.Property(u => u.Country).HasMaxLength(60);
         builder.Property(u => u.TimeZone).HasMaxLength(64);
         builder.Property(u => u.OpenForInstantSwaps).HasDefaultValue(true);
+
+
     }
 }

@@ -95,7 +95,16 @@ function toTimeOnly(value: string): string {
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
                 Join Meeting
               </a>
-              <button class="btn btn-outline btn-sm" [disabled]="acting()" (click)="act('complete')">Mark Completed</button>
+              @if (myConfirmed(s)) {
+                <span class="confirm-chip">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  Waiting for {{ otherFirstName(s) }} to confirm
+                </span>
+              } @else {
+                <button class="btn btn-outline btn-sm" [disabled]="acting()" (click)="act('complete')">
+                  {{ otherConfirmed(s) ? 'Confirm Completion' : 'Mark Completed' }}
+                </button>
+              }
             }
             @if (s.status === Status.Completed) {
               <a class="btn btn-primary btn-sm" [routerLink]="['/swaps', s.id, 'review']">
@@ -205,6 +214,7 @@ function toTimeOnly(value: string): string {
     .date { font-size: 11px; color: var(--text-muted); }
     .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
     .actions .btn { display: inline-flex; align-items: center; gap: 6px; }
+    .confirm-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--warning); background: #fff6e5; border-radius: 999px; padding: 7px 13px; }
 
     .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
     .proposal-form { background: var(--primary-soft); border-radius: var(--radius-md); padding: 14px; margin: 10px 0; }
@@ -280,6 +290,14 @@ export class SwapDetailsComponent implements OnInit {
     return this.isMine(s) ? s.receiverFirstName : s.requesterFirstName;
   }
 
+  protected myConfirmed(s: SwapRequestDetailsDto): boolean {
+    return this.isMine(s) ? s.isRequesterConfirmed : s.isReceiverConfirmed;
+  }
+
+  protected otherConfirmed(s: SwapRequestDetailsDto): boolean {
+    return this.isMine(s) ? s.isReceiverConfirmed : s.isRequesterConfirmed;
+  }
+
   protected statusMeta(status: number): { label: string; className: string } {
     return STATUS_META[status] ?? { label: 'Unknown', className: 'pending' };
   }
@@ -315,10 +333,17 @@ export class SwapDetailsComponent implements OnInit {
     this.actionError.set('');
     try {
       await firstValueFrom(this.swapRequests[action](s.id));
-      this.toast.success(
-        action === 'accept' ? 'Swap accepted.' : action === 'complete' ? 'Swap marked as completed.' : 'Swap updated.'
-      );
       await this.reload();
+      if (action === 'complete') {
+        const updated = this.swap();
+        this.toast.success(
+          updated?.status === SwapRequestStatus.Completed
+            ? 'Swap marked as completed.'
+            : `Completion confirmed — waiting for ${updated ? this.otherFirstName(updated) : 'the other party'} to confirm.`
+        );
+      } else {
+        this.toast.success(action === 'accept' ? 'Swap accepted.' : 'Swap updated.');
+      }
     } catch (err) {
       this.actionError.set(extractApiError(err).message);
     } finally {

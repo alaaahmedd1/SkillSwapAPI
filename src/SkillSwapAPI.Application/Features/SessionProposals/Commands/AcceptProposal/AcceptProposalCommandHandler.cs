@@ -96,6 +96,15 @@ public sealed class AcceptProposalCommandHandler(
         }
         else
         {
+            if (room.Status == LiveSessionStatus.Ended)
+            {
+                room.Status = LiveSessionStatus.Waiting;
+                room.RoomToken = tokenProvider.GenerateRoomToken();
+                room.ActualStartTime = null;
+                room.ActualEndTime = null;
+                room.DurationSeconds = 0;
+            }
+
             room.ScheduledStartTime = scheduledStartTime;
             unitOfWork.LiveSessionRooms.Update(room);
         }

@@ -123,9 +123,24 @@ public sealed class IdentityService(
 
     public async Task<Result<AppUserDto>> FindOrCreateSocialUserAsync(SocialUserInfo socialUser, CancellationToken ct = default)
     {
-        var user = await userManager.FindByEmailAsync(socialUser.Email);
+        var user = string.IsNullOrWhiteSpace(socialUser.Email)
+            ? null
+            : await userManager.FindByEmailAsync(socialUser.Email);
+
+        // Apple only returns the email on the first authorization; later logins match on the stable provider subject.
         if (user is null)
         {
+            var matches = await userManager.GetUsersForClaimAsync(
+                new Claim("ProviderKey", socialUser.ProviderUserId));
+            user = matches.FirstOrDefault();
+        }
+
+        if (user is null)
+        {
+            if (string.IsNullOrWhiteSpace(socialUser.Email))
+            {
+                return ApplicationErrors.SocialAuth.EmailNotProvided;
+            }
 
             var (firstName, lastName) = SplitFullName(socialUser.FullName);
 
@@ -147,6 +162,17 @@ public sealed class IdentityService(
                 return Error.Validation(err?.Code ?? "SocialUser.CreateFailed", err?.Description ?? "Failed to create social user.");
             }
 
+            await userManager.AddClaimAsync(user, new Claim("LoginProvider", socialUser.Provider));
+            await userManager.AddClaimAsync(user, new Claim("ProviderKey", socialUser.ProviderUserId));
+        }
+        else if (!user.IsActive)
+        {
+            return ApplicationErrors.Auth.AccountSuspended;
+        }
+
+        var existingClaims = await userManager.GetClaimsAsync(user);
+        if (!existingClaims.Any(c => c.Type == "ProviderKey" && c.Value == socialUser.ProviderUserId))
+        {
             await userManager.AddClaimAsync(user, new Claim("LoginProvider", socialUser.Provider));
             await userManager.AddClaimAsync(user, new Claim("ProviderKey", socialUser.ProviderUserId));
         }

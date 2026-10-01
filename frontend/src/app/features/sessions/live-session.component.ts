@@ -542,6 +542,10 @@ export class LiveSessionComponent implements OnInit, OnDestroy {
   // ── Teardown ────────────────────────────────────────────────────────────
   protected async endSession(): Promise<void> {
     const room = this.room();
+    if (room && room.status !== LiveSessionStatus.Ended
+        && !window.confirm('End this session? Elapsed time will be settled from the learner\'s wallet.')) {
+      return;
+    }
     try {
       if (room && room.status !== LiveSessionStatus.Ended) {
         await firstValueFrom(this.liveSession.endRoom(room.id));

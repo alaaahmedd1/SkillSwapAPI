@@ -12,13 +12,15 @@ export const AUTH_PAGE_STYLES = `
   form .btn-primary { margin-top: 8px; }
   .switch { text-align: center; font-size: 13.5px; color: var(--text-secondary); margin: 22px 0 0; }
   .switch a { font-weight: 600; }
-  .social-row { display: flex; gap: 14px; justify-content: center; }
+  .social-row { display: flex; gap: 14px; }
   .social-btn {
-    flex: 1; max-width: 140px; height: 52px; display: inline-flex; align-items: center; justify-content: center;
+    flex: 1; height: 52px; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
     background: #fff; border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer;
     box-shadow: var(--shadow-card); transition: transform 0.12s ease;
+    font-size: 14.5px; font-weight: 600; color: var(--text);
   }
   .social-btn:active { transform: scale(0.97); }
+  .social-btn:disabled { opacity: 0.6; cursor: not-allowed; }
   .form-row { display: flex; align-items: center; justify-content: space-between; margin: -6px 0 18px; }
   .checkbox-row { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--text-secondary); user-select: none; }
   .checkbox-row input { width: 17px; height: 17px; accent-color: var(--primary); margin: 0; cursor: pointer; }
