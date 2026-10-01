@@ -17,6 +17,7 @@ const RTC_CONFIG: RTCConfiguration = {
 
 const OFFER_RETRY_MS = 4000;
 const HEARTBEAT_MS = 5000;
+const WB_FLUSH_MS = 40;
 
 interface StrokeOp {
   t: 's' | 'clear';
@@ -198,6 +199,11 @@ export class LiveSessionComponent implements OnInit, OnDestroy {
   private pendingOffers: RTCSessionDescriptionInit[] = [];
   private drawing = false;
   private lastPt: { x: number; y: number } | null = null;
+  private wbPendingPts: number[] = [];
+  private wbLastSentAt = 0;
+  private wbFlushTimer: ReturnType<typeof setTimeout> | null = null;
+  private cameraStarting = false;
+  private renegotiateInFlight = false;
   private hubSubscriptions: Subscription[] = [];
 
   protected readonly isLive = computed(() => this.room()?.status === LiveSessionStatus.InProgress);
@@ -305,17 +311,13 @@ export class LiveSessionComponent implements OnInit, OnDestroy {
 
   private async beginMediaAndCall(): Promise<void> {
     if (this.peer) return; // already set up (SessionStarted echo)
-    try {
-      this.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      if (this.localVideoRef) this.localVideoRef.nativeElement.srcObject = this.localStream;
-    } catch {
-      this.mediaError.set('Camera/microphone unavailable or permission denied. You can still use chat and the whiteboard.');
-      return;
-    }
+    this.localStream = await this.acquireMedia();
 
     this.peer = new RTCPeerConnection(RTC_CONFIG);
-    for (const track of this.localStream.getTracks()) {
-      this.peer.addTrack(track, this.localStream);
+    if (this.localStream) {
+      for (const track of this.localStream.getTracks()) {
+        this.peer.addTrack(track, this.localStream);
+      }
     }
     this.peer.onicecandidate = (event) => {
       if (event.candidate) {
@@ -346,6 +348,62 @@ export class LiveSessionComponent implements OnInit, OnDestroy {
 
     if (this.isRequester()) {
       void this.sendOfferWithRetry();
+    }
+  }
+
+  private async acquireMedia(): Promise<MediaStream | null> {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      this.mediaError.set('Camera/microphone unavailable in this browser. You can still use chat and the whiteboard.');
+      this.micOn.set(false);
+      this.camOn.set(false);
+      return null;
+    }
+
+    let mediaFailure: unknown = null;
+    const attempts: MediaStreamConstraints[] = [
+      { video: true, audio: true },
+      { audio: true },
+      { video: true },
+    ];
+    for (const constraints of attempts) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        if (this.localVideoRef) this.localVideoRef.nativeElement.srcObject = stream;
+        const hasAudio = stream.getAudioTracks().length > 0;
+        const hasVideo = stream.getVideoTracks().length > 0;
+        this.micOn.set(hasAudio);
+        this.camOn.set(hasVideo);
+        if (hasAudio && hasVideo) {
+          this.mediaError.set('');
+        } else {
+          this.mediaError.set(this.mediaFailureMessage(mediaFailure));
+        }
+        return stream;
+      } catch (err) {
+        mediaFailure = err;
+      }
+    }
+
+    this.mediaError.set(this.mediaFailureMessage(mediaFailure));
+    this.micOn.set(false);
+    this.camOn.set(false);
+    return null;
+  }
+
+  private mediaFailureMessage(err: unknown): string {
+    const name = err instanceof DOMException ? err.name : '';
+    switch (name) {
+      case 'NotAllowedError':
+      case 'SecurityError':
+        return 'Camera blocked by browser or Windows privacy settings — allow camera for this site and in Windows Settings → Privacy & security → Camera.';
+      case 'NotReadableError':
+      case 'AbortError':
+        return 'Camera is in use by another app — close apps like Zoom/Teams/OBS, then press the camera button to retry.';
+      case 'NotFoundError':
+      case 'OverconstrainedError':
+        return 'No camera found on this device.';
+      default:
+        return 'Camera unavailable. You can still use voice, chat and the whiteboard.';
     }
   }
 
@@ -402,7 +460,7 @@ export class LiveSessionComponent implements OnInit, OnDestroy {
   }
 
   private async sendOfferOnce(): Promise<void> {
-    if (!this.peer || this.offerAnswered || this.remoteDescSet) {
+    if (!this.peer || this.offerAnswered) {
       this.stopOfferRetry();
       return;
     }
@@ -419,6 +477,19 @@ export class LiveSessionComponent implements OnInit, OnDestroy {
     if (this.offerRetryTimer) {
       clearInterval(this.offerRetryTimer);
       this.offerRetryTimer = null;
+    }
+  }
+
+  private async renegotiate(): Promise<void> {
+    if (!this.peer || this.renegotiateInFlight) return;
+    this.renegotiateInFlight = true;
+    this.offerAnswered = false;
+    try {
+      await this.sendOfferOnce();
+      this.stopOfferRetry();
+      this.offerRetryTimer = setInterval(() => void this.sendOfferOnce(), OFFER_RETRY_MS);
+    } finally {
+      this.renegotiateInFlight = false;
     }
   }
 
@@ -446,11 +517,33 @@ export class LiveSessionComponent implements OnInit, OnDestroy {
     this.micOn.set(track.enabled);
   }
 
-  protected toggleCam(): void {
+  protected async toggleCam(): Promise<void> {
     const track = this.localStream?.getVideoTracks()[0];
-    if (!track) return;
-    track.enabled = !track.enabled;
-    this.camOn.set(track.enabled);
+    if (track) {
+      track.enabled = !track.enabled;
+      this.camOn.set(track.enabled);
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia || this.cameraStarting) return;
+    this.cameraStarting = true;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const videoTrack = stream.getVideoTracks()[0];
+      if (!videoTrack) return;
+      if (this.localStream) this.localStream.addTrack(videoTrack);
+      else this.localStream = stream;
+      if (this.localVideoRef) this.localVideoRef.nativeElement.srcObject = this.localStream;
+      this.camOn.set(true);
+      this.mediaError.set('');
+      if (this.peer) {
+        this.peer.addTrack(videoTrack, this.localStream);
+        await this.renegotiate();
+      }
+    } catch (err) {
+      this.mediaError.set(this.mediaFailureMessage(err));
+    } finally {
+      this.cameraStarting = false;
+    }
   }
 
   // ── Whiteboard ──────────────────────────────────────────────────────────
@@ -489,33 +582,61 @@ export class LiveSessionComponent implements OnInit, OnDestroy {
     const pt = this.canvasPoint(event);
     const op: StrokeOp = { t: 's', c: this.wbColor(), w: 3, pts: [this.lastPt.x, this.lastPt.y, pt.x, pt.y] };
     this.drawStroke(op);
-    void this.liveSession.sendWhiteboardOperation(this.swapId, JSON.stringify(op)).catch(() => undefined);
+    this.wbPendingPts.push(this.lastPt.x, this.lastPt.y, pt.x, pt.y);
+    this.scheduleStrokeFlush();
     this.lastPt = pt;
   }
 
   protected onWbUp(): void {
     this.drawing = false;
     this.lastPt = null;
+    this.flushStroke();
+  }
+
+  private scheduleStrokeFlush(): void {
+    const dueIn = Math.max(0, WB_FLUSH_MS - (Date.now() - this.wbLastSentAt));
+    if (dueIn === 0) {
+      this.flushStroke();
+    } else if (!this.wbFlushTimer) {
+      this.wbFlushTimer = setTimeout(() => this.flushStroke(), dueIn);
+    }
+  }
+
+  private flushStroke(): void {
+    if (this.wbFlushTimer) {
+      clearTimeout(this.wbFlushTimer);
+      this.wbFlushTimer = null;
+    }
+    if (this.wbPendingPts.length < 4) {
+      this.wbPendingPts = [];
+      return;
+    }
+    const op: StrokeOp = { t: 's', c: this.wbColor(), w: 3, pts: [...this.wbPendingPts] };
+    this.wbPendingPts = [];
+    this.wbLastSentAt = Date.now();
+    void this.liveSession.sendWhiteboardOperation(this.swapId, JSON.stringify(op)).catch(() => undefined);
   }
 
   private drawStroke(op: StrokeOp): void {
     const canvas = this.wbCanvasRef?.nativeElement;
-    if (!canvas || !op.pts) return;
+    if (!canvas || !op.pts || op.pts.length < 4) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    const [x1, y1, x2, y2] = op.pts;
     ctx.strokeStyle = op.c ?? '#1f1f3d';
     ctx.lineWidth = op.w ?? 3;
     ctx.lineCap = 'round';
     ctx.beginPath();
-    ctx.moveTo(x1 * canvas.width, y1 * canvas.height);
-    ctx.lineTo(x2 * canvas.width, y2 * canvas.height);
+    for (let i = 0; i + 3 < op.pts.length; i += 2) {
+      ctx.moveTo(op.pts[i] * canvas.width, op.pts[i + 1] * canvas.height);
+      ctx.lineTo(op.pts[i + 2] * canvas.width, op.pts[i + 3] * canvas.height);
+    }
     ctx.stroke();
   }
 
   protected clearWhiteboard(broadcast: boolean): void {
     const canvas = this.wbCanvasRef?.nativeElement;
     canvas?.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
+    this.wbPendingPts = [];
     if (broadcast) {
       const op: StrokeOp = { t: 'clear' };
       void this.liveSession.sendWhiteboardOperation(this.swapId, JSON.stringify(op)).catch(() => undefined);
@@ -559,6 +680,10 @@ export class LiveSessionComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopOfferRetry();
+    if (this.wbFlushTimer) {
+      clearTimeout(this.wbFlushTimer);
+      this.wbFlushTimer = null;
+    }
     if (this.heartbeatTimer) {
       clearInterval(this.heartbeatTimer);
       this.heartbeatTimer = null;
