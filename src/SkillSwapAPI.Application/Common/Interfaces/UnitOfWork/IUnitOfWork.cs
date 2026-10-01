@@ -10,6 +10,7 @@ namespace SkillSwapAPI.Application.Common.Interfaces.UnitOfWork
         ISkillCategoryRepository SkillCategories { get; }
         ISkillRepository Skills { get; }
         IUserSkillRepository UserSkills { get; }
+        IUserAvailabilityRepository UserAvailabilities { get; }
         ISwapRequestRepository SwapRequests { get; }
         IConversationRepository Conversations { get; }
         IMessageRepository Messages { get; }

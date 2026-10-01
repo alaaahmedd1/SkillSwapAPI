@@ -41,6 +41,14 @@ public sealed class GetOwnProfileQueryHandler(
             userResult.Value.TotalReviewsCount,
             userResult.Value.IsActive,
             userResult.Value.CreatedAtUtc,
-            skills);
+            skills,
+            userResult.Value.Title,
+            userResult.Value.Bio,
+            userResult.Value.City,
+            userResult.Value.Country,
+            userResult.Value.TimeZone,
+            userResult.Value.OpenForInstantSwaps,
+            userResult.Value.OnlineOnly,
+            userResult.Value.AutoMatchBarterRequests);
     }
 }

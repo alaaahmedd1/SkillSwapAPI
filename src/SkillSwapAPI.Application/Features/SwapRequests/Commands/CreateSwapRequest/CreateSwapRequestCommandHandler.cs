@@ -57,6 +57,7 @@ public sealed class CreateSwapRequestCommandHandler(
             swapRequest.IsRequesterConfirmed,
             swapRequest.IsReceiverConfirmed,
             swapRequest.CreatedAtUtc,
-            swapRequest.UpdatedAtUtc);
+            swapRequest.UpdatedAtUtc,
+            ConversationId: null);
     }
 }

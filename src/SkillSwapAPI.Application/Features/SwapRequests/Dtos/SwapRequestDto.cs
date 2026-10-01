@@ -16,4 +16,5 @@ public sealed record SwapRequestDto(
     bool IsRequesterConfirmed,
     bool IsReceiverConfirmed,
     DateTimeOffset CreatedAtUtc,
-    DateTimeOffset? UpdatedAtUtc);
+    DateTimeOffset? UpdatedAtUtc,
+    Guid? ConversationId);

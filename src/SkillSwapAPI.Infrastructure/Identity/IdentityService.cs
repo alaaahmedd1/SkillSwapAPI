@@ -104,7 +104,9 @@ public sealed class IdentityService(
         return new AppUserDto(
             user.Id, user.Email!, user.FirstName, user.LastName,
             user.AverageRating, user.TotalReviewsCount, user.IsActive, user.CreatedAtUtc,
-            roles, claims);
+            roles, claims,
+            user.Title, user.Bio, user.City, user.Country, user.TimeZone,
+            user.OpenForInstantSwaps, user.OnlineOnly, user.AutoMatchBarterRequests);
     }
 
     public async Task<bool> IsInRoleAsync(string userId, string role, CancellationToken ct = default)
@@ -246,6 +248,14 @@ public sealed class IdentityService(
         string identityId,
         string firstName,
         string lastName,
+        string? title = null,
+        string? bio = null,
+        string? city = null,
+        string? country = null,
+        string? timeZone = null,
+        bool? openForInstantSwaps = null,
+        bool? onlineOnly = null,
+        bool? autoMatchBarterRequests = null,
         CancellationToken ct = default)
     {
         var user = await userManager.FindByIdAsync(identityId);
@@ -256,6 +266,14 @@ public sealed class IdentityService(
 
         user.FirstName = firstName;
         user.LastName = lastName;
+        user.Title = title ?? user.Title;
+        user.Bio = bio ?? user.Bio;
+        user.City = city ?? user.City;
+        user.Country = country ?? user.Country;
+        user.TimeZone = timeZone ?? user.TimeZone;
+        user.OpenForInstantSwaps = openForInstantSwaps ?? user.OpenForInstantSwaps;
+        user.OnlineOnly = onlineOnly ?? user.OnlineOnly;
+        user.AutoMatchBarterRequests = autoMatchBarterRequests ?? user.AutoMatchBarterRequests;
 
         var result = await userManager.UpdateAsync(user);
         if (!result.Succeeded)
@@ -368,5 +386,13 @@ public sealed class IdentityService(
         user.AverageRating,
         user.TotalReviewsCount,
         user.IsActive,
-        user.CreatedAtUtc);
+        user.CreatedAtUtc,
+        user.Title,
+        user.Bio,
+        user.City,
+        user.Country,
+        user.TimeZone,
+        user.OpenForInstantSwaps,
+        user.OnlineOnly,
+        user.AutoMatchBarterRequests);
 }

@@ -16,6 +16,7 @@ namespace SkillSwapAPI.Infrastructure.UnitOfWork
             SkillCategories = new SkillCategoryRepository(_context);
             Skills = new SkillRepository(_context);
             UserSkills = new UserSkillRepository(_context);
+            UserAvailabilities = new UserAvailabilityRepository(_context);
             SwapRequests = new SwapRequestRepository(_context);
             Conversations = new ConversationRepository(_context);
             Messages = new MessageRepository(_context);
@@ -35,6 +36,7 @@ namespace SkillSwapAPI.Infrastructure.UnitOfWork
         public ISkillCategoryRepository SkillCategories { get; private set; }
         public ISkillRepository Skills { get; private set; }
         public IUserSkillRepository UserSkills { get; private set; }
+        public IUserAvailabilityRepository UserAvailabilities { get; private set; }
         public ISwapRequestRepository SwapRequests { get; private set; }
         public IConversationRepository Conversations { get; private set; }
         public IMessageRepository Messages { get; private set; }

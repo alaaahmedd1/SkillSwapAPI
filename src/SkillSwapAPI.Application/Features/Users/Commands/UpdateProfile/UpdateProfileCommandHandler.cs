@@ -12,5 +12,13 @@ public sealed class UpdateProfileCommandHandler(IIdentityService identityService
             command.UserId.ToString(),
             command.FirstName,
             command.LastName,
+            command.Title,
+            command.Bio,
+            command.City,
+            command.Country,
+            command.TimeZone,
+            command.OpenForInstantSwaps,
+            command.OnlineOnly,
+            command.AutoMatchBarterRequests,
             ct);
 }

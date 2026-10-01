@@ -10,13 +10,20 @@ namespace SkillSwapAPI.API.Controllers.Payments;
 [Authorize]
 [ApiController]
 [Route("api/v1/payments")]
-public sealed class PaymentsController(ISender sender) : ApiBaseController
+public sealed class PaymentsController(ISender sender, IConfiguration configuration) : ApiBaseController
 {
     [HttpGet("packages")]
     public async Task<IActionResult> GetPackages(CancellationToken ct)
     {
         var result = await sender.Send(new GetCreditPackagesQuery(), ct);
         return Ok(result);
+    }
+
+    [HttpGet("config")]
+    [AllowAnonymous]
+    public IActionResult GetPaymentConfig()
+    {
+        return Ok(new PaymentConfigResponse(configuration["Stripe:PublishableKey"] ?? string.Empty));
     }
 
     [HttpPost("checkout")]
@@ -53,3 +60,5 @@ public sealed class PaymentsController(ISender sender) : ApiBaseController
         }
     }
 }
+
+public sealed record PaymentConfigResponse(string PublishableKey);
