@@ -1,0 +1,55 @@
+<div class="upgrade-container">
+  <!-- header -->
+  <header class="header">
+    <button class="back-btn">&larr;</button>
+    <h2>Upgrade Plan</h2>
+    <div class="profile-avatar"></div>
+  </header>
+
+  <div class="banner">
+    <span class="tag">TIME-BANKING EXCHANGE</span>
+    <h1>Invest in Your Growth</h1>
+    <p>Unlock more daily hours to learn, teach, and trade skills without limits.</p>
+  </div>
+
+  <!-- monthly or yearly -->
+  <div class="toggle-container">
+    <button [class.active]="!isYearly" (click)="toggleBilling(false)">Monthly</button>
+    <button [class.active]="isYearly" (click)="toggleBilling(true)">
+      Yearly <span class="badge">Save 20%</span>
+    </button>
+  </div>
+
+  <!-- cards -->
+  <div class="plans-list">
+    @for (plan of plans; track plan.id) {
+      <div class="plan-card" [class.popular]="plan.isPopular">
+        @if (plan.isPopular) {
+          <span class="popular-badge">MOST POPULAR</span>
+        }
+
+        <div class="card-header">
+          <h3>{{ plan.name }}</h3>
+          <div class="price">
+            <span class="amount">${{ isYearly ? plan.priceYearly : plan.priceMonthly }}</span>
+            <span class="period">/ month</span>
+          </div>
+        </div>
+
+        <ul class="features">
+          <li>✔ {{ plan.hoursPerDay }}</li>
+          @for (feat of plan.features; track feat) {
+            <li>✔ {{ feat }}</li>
+          }
+        </ul>
+
+        <button 
+          class="action-btn" 
+          [class.disabled]="plan.id === 'free'"
+          (click)="selectPlan(plan)">
+          {{ plan.id === 'free' ? 'Active Plan' : (loadingPlanId === plan.id ? 'Processing...' : 'Upgrade Now') }}
+        </button>
+      </div>
+    }
+  </div>
+</div>
