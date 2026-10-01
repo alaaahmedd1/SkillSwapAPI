@@ -104,7 +104,9 @@ public sealed class IdentityService(
         return new AppUserDto(
             user.Id, user.Email!, user.FirstName, user.LastName,
             user.AverageRating, user.TotalReviewsCount, user.IsActive, user.CreatedAtUtc,
-            roles, claims);
+            roles, claims,
+            user.Title, user.Bio, user.City, user.Country, user.TimeZone,
+            user.OpenForInstantSwaps, user.OnlineOnly, user.AutoMatchBarterRequests);
     }
 
     public async Task<bool> IsInRoleAsync(string userId, string role, CancellationToken ct = default)
@@ -121,9 +123,24 @@ public sealed class IdentityService(
 
     public async Task<Result<AppUserDto>> FindOrCreateSocialUserAsync(SocialUserInfo socialUser, CancellationToken ct = default)
     {
-        var user = await userManager.FindByEmailAsync(socialUser.Email);
+        var user = string.IsNullOrWhiteSpace(socialUser.Email)
+            ? null
+            : await userManager.FindByEmailAsync(socialUser.Email);
+
+        // Apple only returns the email on the first authorization; later logins match on the stable provider subject.
         if (user is null)
         {
+            var matches = await userManager.GetUsersForClaimAsync(
+                new Claim("ProviderKey", socialUser.ProviderUserId));
+            user = matches.FirstOrDefault();
+        }
+
+        if (user is null)
+        {
+            if (string.IsNullOrWhiteSpace(socialUser.Email))
+            {
+                return ApplicationErrors.SocialAuth.EmailNotProvided;
+            }
 
             var (firstName, lastName) = SplitFullName(socialUser.FullName);
 
@@ -145,6 +162,17 @@ public sealed class IdentityService(
                 return Error.Validation(err?.Code ?? "SocialUser.CreateFailed", err?.Description ?? "Failed to create social user.");
             }
 
+            await userManager.AddClaimAsync(user, new Claim("LoginProvider", socialUser.Provider));
+            await userManager.AddClaimAsync(user, new Claim("ProviderKey", socialUser.ProviderUserId));
+        }
+        else if (!user.IsActive)
+        {
+            return ApplicationErrors.Auth.AccountSuspended;
+        }
+
+        var existingClaims = await userManager.GetClaimsAsync(user);
+        if (!existingClaims.Any(c => c.Type == "ProviderKey" && c.Value == socialUser.ProviderUserId))
+        {
             await userManager.AddClaimAsync(user, new Claim("LoginProvider", socialUser.Provider));
             await userManager.AddClaimAsync(user, new Claim("ProviderKey", socialUser.ProviderUserId));
         }
@@ -246,6 +274,14 @@ public sealed class IdentityService(
         string identityId,
         string firstName,
         string lastName,
+        string? title = null,
+        string? bio = null,
+        string? city = null,
+        string? country = null,
+        string? timeZone = null,
+        bool? openForInstantSwaps = null,
+        bool? onlineOnly = null,
+        bool? autoMatchBarterRequests = null,
         CancellationToken ct = default)
     {
         var user = await userManager.FindByIdAsync(identityId);
@@ -256,6 +292,14 @@ public sealed class IdentityService(
 
         user.FirstName = firstName;
         user.LastName = lastName;
+        user.Title = title ?? user.Title;
+        user.Bio = bio ?? user.Bio;
+        user.City = city ?? user.City;
+        user.Country = country ?? user.Country;
+        user.TimeZone = timeZone ?? user.TimeZone;
+        user.OpenForInstantSwaps = openForInstantSwaps ?? user.OpenForInstantSwaps;
+        user.OnlineOnly = onlineOnly ?? user.OnlineOnly;
+        user.AutoMatchBarterRequests = autoMatchBarterRequests ?? user.AutoMatchBarterRequests;
 
         var result = await userManager.UpdateAsync(user);
         if (!result.Succeeded)
@@ -368,5 +412,13 @@ public sealed class IdentityService(
         user.AverageRating,
         user.TotalReviewsCount,
         user.IsActive,
-        user.CreatedAtUtc);
+        user.CreatedAtUtc,
+        user.Title,
+        user.Bio,
+        user.City,
+        user.Country,
+        user.TimeZone,
+        user.OpenForInstantSwaps,
+        user.OnlineOnly,
+        user.AutoMatchBarterRequests);
 }

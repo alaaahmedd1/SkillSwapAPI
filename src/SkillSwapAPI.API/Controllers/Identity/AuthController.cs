@@ -4,6 +4,7 @@ using SkillSwapAPI.Application.Features.Identity.Commands.ForgotPassword;
 using SkillSwapAPI.Application.Features.Identity.Commands.Login;
 using SkillSwapAPI.Application.Features.Identity.Commands.Logout;
 using SkillSwapAPI.Application.Features.Identity.Commands.Register;
+using SkillSwapAPI.Application.Features.Identity.Commands.ResendOtp;
 using SkillSwapAPI.Application.Features.Identity.Commands.ResetPassword;
 using SkillSwapAPI.Application.Features.Identity.Commands.SocialLogin;
 using SkillSwapAPI.Application.Features.Identity.Commands.VerifyOtp;
@@ -74,6 +75,13 @@ public class AuthController : ApiBaseController
         return HandleResult(result);
     }
 
+    [HttpPost("resend-otp")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ResendOtp([FromBody] ResendOtpCommand command, CancellationToken ct)
+    {
+        var result = await Mediator.Send(command, ct);
+        return HandleResult(result);
+    }
 
     [HttpPost("logout")]
     [Authorize]

@@ -29,6 +29,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
     public DbSet<SkillCategory> SkillCategories => Set<SkillCategory>();
     public DbSet<Skill> Skills => Set<Skill>();
     public DbSet<UserSkill> UserSkills => Set<UserSkill>();
+    public DbSet<UserAvailability> UserAvailabilities => Set<UserAvailability>();
     public DbSet<SwapRequest> SwapRequests => Set<SwapRequest>();
     public DbSet<Conversation> Conversations => Set<Conversation>();
     public DbSet<Message> Messages => Set<Message>();

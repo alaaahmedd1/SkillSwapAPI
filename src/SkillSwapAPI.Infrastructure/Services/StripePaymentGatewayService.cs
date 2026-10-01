@@ -1,10 +1,11 @@
-﻿using SkillSwapAPI.Application.Common.Interfaces.Payments;
+﻿using Microsoft.Extensions.Configuration;
+using SkillSwapAPI.Application.Common.Interfaces.Payments;
 using Stripe;
 using static SkillSwapAPI.Application.Common.Interfaces.Payments.IPaymentGatewayService;
 
 namespace SkillSwapAPI.Infrastructure.Services.Payments;
 
-public sealed class StripePaymentGatewayService : IPaymentGatewayService
+public sealed class StripePaymentGatewayService(IConfiguration configuration) : IPaymentGatewayService
 {
     public async Task<(string PaymentIntentId, string ClientSecret)> CreatePaymentIntentAsync(
         decimal amount,
@@ -13,6 +14,8 @@ public sealed class StripePaymentGatewayService : IPaymentGatewayService
         Guid packageId,
         CancellationToken ct = default)
     {
+        StripeConfiguration.ApiKey = configuration["Stripe:SecretKey"];
+
         var options = new PaymentIntentCreateOptions
         {
             Amount = (long)(amount * 100), 

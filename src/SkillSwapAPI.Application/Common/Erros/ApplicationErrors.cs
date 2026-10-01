@@ -73,6 +73,11 @@ public static class ApplicationErrors
                 "SocialAuth.ProviderNotSupported",
                 "The specified social provider is not supported.");
 
+        public static Error ProviderNotConfigured =>
+            Error.Unexpected(
+                "SocialAuth.ProviderNotConfigured",
+                "The selected social provider is not configured on the server.");
+
         public static Error EmailNotProvided =>
             Error.Validation(
                 "SocialAuth.EmailNotProvided",

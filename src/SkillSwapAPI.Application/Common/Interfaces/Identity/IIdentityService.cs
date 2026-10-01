@@ -43,6 +43,14 @@ public interface IIdentityService
         string identityId,
         string firstName,
         string lastName,
+        string? title = null,
+        string? bio = null,
+        string? city = null,
+        string? country = null,
+        string? timeZone = null,
+        bool? openForInstantSwaps = null,
+        bool? onlineOnly = null,
+        bool? autoMatchBarterRequests = null,
         CancellationToken ct = default);
 
     Task<Result<Updated>> UpdateRatingSummaryAsync(

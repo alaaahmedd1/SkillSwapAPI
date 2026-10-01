@@ -14,5 +14,13 @@ public sealed class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
         builder.Property(u => u.TotalReviewsCount).HasDefaultValue(0);
         builder.Property(u => u.IsActive).HasDefaultValue(true);
         builder.Property(u => u.CreatedAtUtc).IsRequired();
+        builder.Property(u => u.Title).HasMaxLength(100);
+        builder.Property(u => u.Bio).HasMaxLength(200);
+        builder.Property(u => u.City).HasMaxLength(60);
+        builder.Property(u => u.Country).HasMaxLength(60);
+        builder.Property(u => u.TimeZone).HasMaxLength(64);
+        builder.Property(u => u.OpenForInstantSwaps).HasDefaultValue(true);
+
+
     }
 }

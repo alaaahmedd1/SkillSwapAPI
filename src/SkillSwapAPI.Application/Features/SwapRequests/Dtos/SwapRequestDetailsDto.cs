@@ -1,3 +1,4 @@
+using SkillSwapAPI.Application.Features.SessionProposals.Dtos;
 using SkillSwapAPI.Domain.Modules.SwapRequests.Enums;
 
 namespace SkillSwapAPI.Application.Features.SwapRequests.Dtos;
@@ -17,4 +18,6 @@ public sealed record SwapRequestDetailsDto(
     bool IsReceiverConfirmed,
     string? ProposedScheduleDetails,
     DateTimeOffset CreatedAtUtc,
-    DateTimeOffset? UpdatedAtUtc);
+    DateTimeOffset? UpdatedAtUtc,
+    Guid? ConversationId,
+    IReadOnlyList<SessionProposalDto> SessionProposals);

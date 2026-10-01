@@ -9,4 +9,12 @@ public sealed record ProfileDto(
     int TotalReviewsCount,
     bool IsActive,
     DateTimeOffset CreatedAtUtc,
-    IReadOnlyList<UserSkillDto> UserSkills);
+    IReadOnlyList<UserSkillDto> UserSkills,
+    string? Title = null,
+    string? Bio = null,
+    string? City = null,
+    string? Country = null,
+    string? TimeZone = null,
+    bool OpenForInstantSwaps = true,
+    bool OnlineOnly = false,
+    bool AutoMatchBarterRequests = false);

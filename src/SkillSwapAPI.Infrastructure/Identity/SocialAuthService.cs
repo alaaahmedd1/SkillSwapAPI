@@ -40,6 +40,12 @@ public sealed class SocialAuthService(
     private async Task<Result<SocialUserInfo>> VerifyGoogleAsync(
         string idToken, CancellationToken ct)
     {
+        if (string.IsNullOrWhiteSpace(_settings.Google.ClientId))
+        {
+            logger.LogError("Google sign-in attempted but SocialAuth:Google:ClientId is not configured.");
+            return ApplicationErrors.SocialAuth.ProviderNotConfigured;
+        }
+
         try
         {
             var payload = await GoogleJsonWebSignature.ValidateAsync(
@@ -123,6 +129,12 @@ public sealed class SocialAuthService(
 
     private async Task<Result<SocialUserInfo>> VerifyAppleAsync(string idToken, CancellationToken ct)
     {
+        if (string.IsNullOrWhiteSpace(_settings.Apple.ClientId))
+        {
+            logger.LogError("Apple sign-in attempted but SocialAuth:Apple:ClientId is not configured.");
+            return ApplicationErrors.SocialAuth.ProviderNotConfigured;
+        }
+
         if (string.IsNullOrWhiteSpace(idToken))
             return ApplicationErrors.SocialAuth.InvalidToken;
 
@@ -174,6 +186,11 @@ public sealed class SocialAuthService(
                 Email: email ?? string.Empty,
                 FullName: email ?? "Apple User",
                 Provider: "Apple");
+        }
+        catch (ArgumentException ex)
+        {
+            logger.LogWarning(ex, "Malformed Apple JWT");
+            return ApplicationErrors.SocialAuth.InvalidToken;
         }
         catch (SecurityTokenException ex)
         {

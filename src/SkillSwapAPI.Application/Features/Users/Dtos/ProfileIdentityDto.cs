@@ -8,4 +8,12 @@ public sealed record ProfileIdentityDto(
     decimal AverageRating,
     int TotalReviewsCount,
     bool IsActive,
-    DateTimeOffset CreatedAtUtc);
+    DateTimeOffset CreatedAtUtc,
+    string? Title = null,
+    string? Bio = null,
+    string? City = null,
+    string? Country = null,
+    string? TimeZone = null,
+    bool OpenForInstantSwaps = true,
+    bool OnlineOnly = false,
+    bool AutoMatchBarterRequests = false);

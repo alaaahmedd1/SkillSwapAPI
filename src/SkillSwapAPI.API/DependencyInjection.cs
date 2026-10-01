@@ -88,9 +88,10 @@ public static class DependencyInjection
         {
             options.AddPolicy("AllowAll", builder =>
             {
-                builder.AllowAnyOrigin()
-                       .AllowAnyMethod()
-                       .AllowAnyHeader();
+                builder.WithOrigins("http://localhost:4200", "https://localhost:4200")
+               .AllowAnyMethod()
+               .AllowAnyHeader()
+               .AllowCredentials();
             });
         });
 

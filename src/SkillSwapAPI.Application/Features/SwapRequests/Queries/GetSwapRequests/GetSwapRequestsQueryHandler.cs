@@ -24,6 +24,12 @@ public sealed class GetSwapRequestsQueryHandler(
 
         var profiles = await identityService.GetProfilesAsync(participantIds, ct);
 
+        var swapIds = pageItems.Select(swapRequest => swapRequest.Id).ToList();
+        var conversations = await unitOfWork.Conversations.FindAllAsync(
+            conversation => swapIds.Contains(conversation.SwapRequestId), ct);
+        var conversationIdsBySwapId = conversations.ToDictionary(
+            conversation => conversation.SwapRequestId, conversation => (Guid?)conversation.Id);
+
         var items = pageItems
             .Select(swapRequest =>
             {
@@ -50,7 +56,8 @@ public sealed class GetSwapRequestsQueryHandler(
                     swapRequest.IsRequesterConfirmed,
                     swapRequest.IsReceiverConfirmed,
                     swapRequest.CreatedAtUtc,
-                    swapRequest.UpdatedAtUtc);
+                    swapRequest.UpdatedAtUtc,
+                    conversationIdsBySwapId.GetValueOrDefault(swapRequest.Id));
             })
             .ToList();
 

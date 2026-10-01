@@ -12,4 +12,12 @@ public sealed record AppUserDto(
     bool IsActive,
     DateTimeOffset CreatedAtUtc,
     IList<string> Roles,
-    IList<Claim> Claims);
+    IList<Claim> Claims,
+    string? Title = null,
+    string? Bio = null,
+    string? City = null,
+    string? Country = null,
+    string? TimeZone = null,
+    bool OpenForInstantSwaps = true,
+    bool OnlineOnly = false,
+    bool AutoMatchBarterRequests = false);

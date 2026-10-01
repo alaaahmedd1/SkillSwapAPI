@@ -1,7 +1,9 @@
 using MediatR;
+using SkillSwapAPI.Application.Common.Enums;
 using SkillSwapAPI.Application.Common.Errors;
 using SkillSwapAPI.Application.Common.Interfaces.Identity;
 using SkillSwapAPI.Application.Common.Interfaces.UnitOfWork;
+using SkillSwapAPI.Application.Features.SessionProposals.Dtos;
 using SkillSwapAPI.Application.Features.SwapRequests.Dtos;
 using SkillSwapAPI.Domain.Common.Results;
 
@@ -32,6 +34,15 @@ public sealed class GetSwapRequestDetailsQueryHandler(
         var requester = profiles.FirstOrDefault(profile => profile.UserId == swapRequest.RequesterId);
         var receiver = profiles.FirstOrDefault(profile => profile.UserId == swapRequest.ReceiverId);
 
+        var conversation = await unitOfWork.Conversations.FindAsync(
+            candidate => candidate.SwapRequestId == swapRequest.Id, ct);
+
+        var sessionProposals = await unitOfWork.SessionProposals.FindAllAsync(
+            proposal => proposal.SwapRequestId == swapRequest.Id,
+            SortDirection.Descending,
+            proposal => proposal.CreatedAtUtc,
+            ct);
+
         return new SwapRequestDetailsDto(
             swapRequest.Id,
             swapRequest.RequesterId,
@@ -53,6 +64,19 @@ public sealed class GetSwapRequestDetailsQueryHandler(
             swapRequest.IsReceiverConfirmed,
             swapRequest.ProposedScheduleDetails,
             swapRequest.CreatedAtUtc,
-            swapRequest.UpdatedAtUtc);
+            swapRequest.UpdatedAtUtc,
+            conversation?.Id,
+            sessionProposals
+                .Select(proposal => new SessionProposalDto(
+                    proposal.Id,
+                    proposal.SwapRequestId,
+                    proposal.ProposerId,
+                    proposal.ScheduledDate,
+                    proposal.StartTime,
+                    proposal.EndTime,
+                    proposal.DurationMinutes,
+                    proposal.Status,
+                    proposal.CreatedAtUtc))
+                .ToList());
     }
 }

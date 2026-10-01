@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 using SkillSwapAPI.Infrastructure.Services.Payments;
 using Xunit;
 
@@ -9,13 +10,16 @@ public sealed class StripePaymentGatewayServiceTests
 {
     private const string Secret = "whsec_test_fixture_secret";
 
+    private static StripePaymentGatewayService CreateService() =>
+        new(new ConfigurationBuilder().Build());
+
     [Fact]
     public void ProcessWebhookEvent_WithValidStripeSignature_ParsesPaymentIntentOutcome()
     {
         const string payload = """{"id":"evt_123","object":"event","api_version":"2026-08-26.dahlia","created":1760000000,"data":{"object":{"id":"pi_123","object":"payment_intent","last_payment_error":null}},"livemode":false,"pending_webhooks":1,"type":"payment_intent.succeeded"}""";
         var signature = Sign(payload);
 
-        var result = new StripePaymentGatewayService().ProcessWebhookEvent(payload, signature, Secret);
+        var result = CreateService().ProcessWebhookEvent(payload, signature, Secret);
 
         Assert.Equal("payment_intent.succeeded", result.EventType);
         Assert.Equal("pi_123", result.PaymentIntentId);
@@ -26,7 +30,7 @@ public sealed class StripePaymentGatewayServiceTests
     [Fact]
     public void ProcessWebhookEvent_WithInvalidSignature_RejectsWebhook()
     {
-        var service = new StripePaymentGatewayService();
+        var service = CreateService();
 
         Assert.Throws<Stripe.StripeException>(() => service.ProcessWebhookEvent("{}", "t=1,v1=invalid", Secret));
     }
@@ -36,7 +40,7 @@ public sealed class StripePaymentGatewayServiceTests
     {
         const string payload = """{"id":"evt_456","object":"event","api_version":"2026-08-26.dahlia","created":1760000000,"data":{"object":{"id":"pi_failed","object":"payment_intent","last_payment_error":null}},"livemode":false,"pending_webhooks":1,"type":"payment_intent.payment_failed"}""";
 
-        var result = new StripePaymentGatewayService().ProcessWebhookEvent(payload, Sign(payload), Secret);
+        var result = CreateService().ProcessWebhookEvent(payload, Sign(payload), Secret);
 
         Assert.Equal("payment_intent.payment_failed", result.EventType);
         Assert.Equal("pi_failed", result.PaymentIntentId);
