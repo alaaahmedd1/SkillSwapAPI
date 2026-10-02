@@ -7,6 +7,40 @@ import { AuthService } from '../../../core/services/auth.service';
   imports: [RouterLink, RouterLinkActive],
   template: `
     <div class="app-frame shell">
+      <aside class="sidebar">
+        <a class="brand" routerLink="/home" aria-label="SkillSwap home">
+          <span class="brand-mark">&infin;</span>
+          <span class="brand-name">Skill<b>Swap</b></span>
+        </a>
+
+        <nav class="side-nav" aria-label="Primary">
+          @for (item of navItems; track item.route) {
+            <a
+              [routerLink]="item.route"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: item.exact }"
+              class="side-link"
+              #rla="routerLinkActive"
+              [attr.aria-current]="rla.isActive ? 'page' : null"
+            >
+              <span class="nav-icon" [innerHTML]="item.icon"></span>
+              <span class="side-label">{{ item.label }}</span>
+            </a>
+          }
+        </nav>
+
+        <div class="side-user">
+          @if (!isAuthenticated()) {
+            <a class="signin-pill" routerLink="/auth/sign-in">Sign in</a>
+          } @else {
+            <a class="side-user-link" routerLink="/profile">
+              <span class="avatar" [title]="userName()">{{ initials() }}</span>
+              <span class="side-user-name">{{ userName() }}</span>
+            </a>
+          }
+        </div>
+      </aside>
+
       <header class="topbar">
         <a class="brand" routerLink="/home" aria-label="SkillSwap home">
           <span class="brand-mark">&infin;</span>
@@ -33,7 +67,8 @@ import { AuthService } from '../../../core/services/auth.service';
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: item.exact }"
             class="nav-item"
-            [attr.aria-label]="item.label"
+            #rla="routerLinkActive"
+            [attr.aria-current]="rla.isActive ? 'page' : null"
           >
             <span class="nav-icon" [innerHTML]="item.icon"></span>
             <span class="nav-label">{{ item.label }}</span>
@@ -47,6 +82,10 @@ import { AuthService } from '../../../core/services/auth.service';
       display: flex;
       flex-direction: column;
       padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px));
+    }
+
+    .sidebar {
+      display: none;
     }
 
     .topbar {
@@ -116,6 +155,7 @@ import { AuthService } from '../../../core/services/auth.service';
       justify-content: center;
       font-size: 13px;
       font-weight: 700;
+      flex-shrink: 0;
     }
 
     .shell-content {
@@ -169,6 +209,119 @@ import { AuthService } from '../../../core/services/auth.service';
             transform: translateY(-1px);
           }
         }
+      }
+    }
+
+    @media (min-width: 900px) {
+      .shell {
+        display: block;
+        padding-bottom: 0;
+      }
+
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 236px;
+        background: #fff;
+        border-right: 1px solid var(--border);
+        padding: 22px 14px 18px;
+        z-index: 50;
+      }
+
+      .side-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-top: 30px;
+        flex: 1;
+      }
+
+      .side-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 11px 14px;
+        border-radius: var(--radius-sm);
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: background 0.15s ease, color 0.15s ease;
+
+        .nav-icon {
+          display: inline-flex;
+
+          ::ng-deep svg {
+            width: 21px;
+            height: 21px;
+          }
+        }
+
+        &:hover {
+          background: var(--primary-soft);
+          color: var(--text);
+        }
+
+        &.active {
+          background: var(--primary-light);
+          color: var(--primary);
+          font-weight: 600;
+        }
+      }
+
+      .side-user {
+        border-top: 1px solid var(--border);
+        padding-top: 14px;
+      }
+
+      .side-user-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 8px;
+        border-radius: var(--radius-sm);
+        text-decoration: none;
+        color: var(--text);
+
+        &:hover {
+          background: var(--primary-soft);
+        }
+      }
+
+      .side-user-name {
+        font-size: 13.5px;
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .topbar {
+        margin-left: 236px;
+        padding: 12px 32px;
+
+        .brand {
+          display: none;
+        }
+      }
+
+      .topbar-actions {
+        width: 100%;
+        justify-content: flex-end;
+      }
+
+      .shell-content {
+        margin-left: 236px;
+        padding: 26px 32px 48px;
+        max-width: 1120px;
+      }
+
+      .bottom-nav {
+        display: none;
       }
     }
   `,

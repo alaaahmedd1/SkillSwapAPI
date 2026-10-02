@@ -159,6 +159,12 @@ interface StrokeOp {
     .ctl.active-ctl { background: var(--primary-light); color: var(--primary); }
     .ctl.start { background: var(--success-light); color: var(--success); }
     .ctl.end { background: var(--danger); color: #fff; }
+
+    @media (min-width: 900px) {
+      .stage { max-width: 960px; margin: 0 auto; }
+      .ctl:hover { background: #ececf5; }
+      .ctl.end:hover { background: #e63e3e; }
+    }
   `,
 })
 export class LiveSessionComponent implements OnInit, OnDestroy {

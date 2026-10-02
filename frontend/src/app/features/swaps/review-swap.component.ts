@@ -137,6 +137,14 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
     .actions { display: flex; gap: 10px; margin-bottom: 14px; }
     .state-box { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 36px 16px; color: var(--text-secondary); font-size: 13.5px; }
 
+    @media (min-width: 900px) {
+      .page-title { font-size: 26px; }
+      .icon-btn:hover { background: var(--primary-light); color: var(--primary); }
+      .card { max-width: 640px; }
+      .badge-grid { grid-template-columns: repeat(4, 1fr); }
+      .actions .btn { flex: 0 0 auto; }
+    }
+
     .overlay { position: fixed; inset: 0; z-index: 100; background: rgba(31, 31, 61, 0.45); display: flex; align-items: center; justify-content: center; padding: 24px; }
     .modal {
       width: 100%; max-width: 380px; background: #fff; border-radius: 24px; padding: 28px 22px;

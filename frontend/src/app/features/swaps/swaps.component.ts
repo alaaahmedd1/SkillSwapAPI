@@ -87,7 +87,8 @@ const TABS = [
     .chips-row { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 14px; margin: 0 -2px; scrollbar-width: none; }
     .chips-row::-webkit-scrollbar { display: none; }
     .list { display: flex; flex-direction: column; gap: 12px; }
-    .swap-row { display: block; padding: 16px; text-decoration: none; color: inherit; }
+    .swap-row { display: block; padding: 16px; text-decoration: none; color: inherit; transition: box-shadow 0.2s ease, transform 0.2s ease; }
+    .swap-row:hover { box-shadow: 0 8px 24px rgba(31, 31, 61, 0.1); transform: translateY(-1px); }
     .row-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 14.5px; }
     .status { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 999px; }
     .status.pending { background: #fff6e5; color: var(--warning); }
@@ -102,6 +103,17 @@ const TABS = [
     .state-box { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 36px 16px; color: var(--text-secondary); font-size: 13.5px; }
     .state-art { width: 150px; height: 150px; object-fit: cover; border-radius: var(--radius-lg); }
     .more { display: flex; justify-content: center; margin-top: 18px; }
+
+    @media (min-width: 768px) {
+      .page-title { font-size: 26px; }
+      .chips-row { flex-wrap: wrap; overflow-x: visible; scrollbar-width: auto; }
+      .chips-row::-webkit-scrollbar { display: block; }
+      .list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 16px;
+      }
+    }
   `,
 })
 export class SwapsComponent implements OnInit {
