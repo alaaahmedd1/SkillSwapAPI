@@ -201,7 +201,7 @@ export class LiveSessionComponent implements OnInit, OnDestroy {
   private offerAnswered = false;
   private offerRetryTimer: ReturnType<typeof setInterval> | null = null;
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
-  private remoteDescSet = false;
+  private readonly remoteDescSet = signal(false);
   private pendingOffers: RTCSessionDescriptionInit[] = [];
   private drawing = false;
   private lastPt: { x: number; y: number } | null = null;
@@ -209,7 +209,9 @@ export class LiveSessionComponent implements OnInit, OnDestroy {
   private wbLastSentAt = 0;
   private wbFlushTimer: ReturnType<typeof setTimeout> | null = null;
   private cameraStarting = false;
+  private mediaSetupStarting = false;
   private renegotiateInFlight = false;
+  private endingLocally = false;
   private hubSubscriptions: Subscription[] = [];
 
   protected readonly isLive = computed(() => this.room()?.status === LiveSessionStatus.InProgress);
@@ -217,8 +219,8 @@ export class LiveSessionComponent implements OnInit, OnDestroy {
     const room = this.room();
     return !!room && room.status === LiveSessionStatus.Waiting;
   });
-  protected readonly remoteActive = computed(() => this.remoteDescSet);
-  protected readonly waitingForPeer = computed(() => this.isLive() && !this.remoteDescSet);
+  protected readonly remoteActive = computed(() => this.remoteDescSet());
+  protected readonly waitingForPeer = computed(() => this.isLive() && !this.remoteDescSet());
 
   protected readonly formattedElapsed = computed(() => {
     const seconds = this.elapsed();
@@ -280,6 +282,7 @@ export class LiveSessionComponent implements OnInit, OnDestroy {
           this.room.update((r) => (r ? { ...r, status: LiveSessionStatus.InProgress } : r));
           void this.onSessionStarted();
         }),
+        this.liveSession.sessionEnded$.subscribe(() => this.onSessionEnded()),
         this.liveSession.offer$.subscribe((desc) => void this.handleOffer(desc)),
         this.liveSession.answer$.subscribe((desc) => void this.handleAnswer(desc)),
         this.liveSession.iceCandidate$.subscribe((candidate) => void this.handleIceCandidate(candidate)),
@@ -293,6 +296,19 @@ export class LiveSessionComponent implements OnInit, OnDestroy {
   private async onSessionStarted(): Promise<void> {
     await this.beginMediaAndCall();
     this.startHeartbeat();
+  }
+
+  private onSessionEnded(): void {
+    if (this.room()?.status === LiveSessionStatus.Ended) return;
+    this.room.update((r) => (r ? { ...r, status: LiveSessionStatus.Ended } : r));
+    this.stopOfferRetry();
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer);
+      this.heartbeatTimer = null;
+    }
+    if (this.endingLocally) return;
+    this.toast.success('The other participant ended the session.');
+    void this.router.navigate(this.backLink());
   }
 
   protected async startSession(): Promise<void> {
@@ -316,44 +332,49 @@ export class LiveSessionComponent implements OnInit, OnDestroy {
   }
 
   private async beginMediaAndCall(): Promise<void> {
-    if (this.peer) return; // already set up (SessionStarted echo)
-    this.localStream = await this.acquireMedia();
+    if (this.peer || this.mediaSetupStarting) return; // already set up (SessionStarted echo)
+    this.mediaSetupStarting = true;
+    try {
+      this.localStream = await this.acquireMedia();
 
-    this.peer = new RTCPeerConnection(RTC_CONFIG);
-    if (this.localStream) {
-      for (const track of this.localStream.getTracks()) {
-        this.peer.addTrack(track, this.localStream);
+      this.peer = new RTCPeerConnection(RTC_CONFIG);
+      if (this.localStream) {
+        for (const track of this.localStream.getTracks()) {
+          this.peer.addTrack(track, this.localStream);
+        }
       }
-    }
-    this.peer.onicecandidate = (event) => {
-      if (event.candidate) {
-        void this.liveSession
-          .sendIceCandidate(this.swapId, {
-            candidate: event.candidate.candidate,
-            sdpMid: event.candidate.sdpMid,
-            sdpMLineIndex: event.candidate.sdpMLineIndex,
-          })
-          .catch(() => undefined);
-      }
-    };
-    this.peer.ontrack = (event) => {
-      if (this.remoteVideoRef) {
-        this.remoteVideoRef.nativeElement.srcObject = event.streams[0] ?? null;
-      }
-    };
-    this.peer.onconnectionstatechange = () => {
-      if (this.peer?.connectionState === 'connected') {
-        this.stopOfferRetry();
-      }
-    };
+      this.peer.onicecandidate = (event) => {
+        if (event.candidate) {
+          void this.liveSession
+            .sendIceCandidate(this.swapId, {
+              candidate: event.candidate.candidate,
+              sdpMid: event.candidate.sdpMid,
+              sdpMLineIndex: event.candidate.sdpMLineIndex,
+            })
+            .catch(() => undefined);
+        }
+      };
+      this.peer.ontrack = (event) => {
+        if (this.remoteVideoRef) {
+          this.remoteVideoRef.nativeElement.srcObject = event.streams[0] ?? null;
+        }
+      };
+      this.peer.onconnectionstatechange = () => {
+        if (this.peer?.connectionState === 'connected') {
+          this.stopOfferRetry();
+        }
+      };
 
-    // Process any offer that arrived before the peer was ready.
-    for (const offer of this.pendingOffers.splice(0)) {
-      await this.answerOffer(offer);
-    }
+      // Process any offer that arrived before the peer was ready.
+      for (const offer of this.pendingOffers.splice(0)) {
+        await this.answerOffer(offer);
+      }
 
-    if (this.isRequester()) {
-      void this.sendOfferWithRetry();
+      if (this.isRequester()) {
+        void this.sendOfferWithRetry();
+      }
+    } finally {
+      this.mediaSetupStarting = false;
     }
   }
 
@@ -426,7 +447,7 @@ export class LiveSessionComponent implements OnInit, OnDestroy {
     if (!this.peer) return;
     try {
       await this.peer.setRemoteDescription(offer);
-      this.remoteDescSet = true;
+      this.remoteDescSet.set(true);
       const answer = await this.peer.createAnswer();
       await this.peer.setLocalDescription(answer);
       await this.liveSession.sendAnswer(this.swapId, { type: answer.type, sdp: answer.sdp ?? '' });
@@ -439,7 +460,7 @@ export class LiveSessionComponent implements OnInit, OnDestroy {
     if (!this.peer) return;
     try {
       await this.peer.setRemoteDescription({ type: desc.type as RTCSdpType, sdp: desc.sdp });
-      this.remoteDescSet = true;
+      this.remoteDescSet.set(true);
       this.offerAnswered = true;
       this.stopOfferRetry();
     } catch {
@@ -673,12 +694,16 @@ export class LiveSessionComponent implements OnInit, OnDestroy {
         && !window.confirm('End this session? Elapsed time will be settled from the learner\'s wallet.')) {
       return;
     }
+    this.endingLocally = true;
     try {
       if (room && room.status !== LiveSessionStatus.Ended) {
         await firstValueFrom(this.liveSession.endRoom(room.id));
+        this.room.update((r) => (r ? { ...r, status: LiveSessionStatus.Ended } : r));
       }
-    } catch {
-      // Best effort — local teardown below still runs.
+    } catch (err) {
+      this.endingLocally = false;
+      this.toast.error(extractApiError(err).message);
+      return;
     }
     this.toast.success('Session ended.');
     void this.router.navigate(this.backLink());

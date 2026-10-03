@@ -22,11 +22,13 @@ export class LiveSessionService {
   private hub: signalR.HubConnection | null = null;
 
   private readonly sessionStartedSubject = new Subject<LiveSessionRoomDto>();
+  private readonly sessionEndedSubject = new Subject<LiveSessionRoomDto>();
   private readonly offerSubject = new Subject<RtcSessionDescriptionDto>();
   private readonly answerSubject = new Subject<RtcSessionDescriptionDto>();
   private readonly iceCandidateSubject = new Subject<RtcIceCandidateDto>();
   private readonly whiteboardSubject = new Subject<string>();
   readonly sessionStarted$ = this.sessionStartedSubject.asObservable();
+  readonly sessionEnded$ = this.sessionEndedSubject.asObservable();
   readonly offer$ = this.offerSubject.asObservable();
   readonly answer$ = this.answerSubject.asObservable();
   readonly iceCandidate$ = this.iceCandidateSubject.asObservable();
@@ -53,6 +55,7 @@ export class LiveSessionService {
       .build();
 
     this.hub.on('SessionStarted', (room: LiveSessionRoomDto) => this.sessionStartedSubject.next(room));
+    this.hub.on('SessionEnded', (room: LiveSessionRoomDto) => this.sessionEndedSubject.next(room));
     this.hub.on('ReceiveOffer', (desc: RtcSessionDescriptionDto) => this.offerSubject.next(desc));
     this.hub.on('ReceiveAnswer', (desc: RtcSessionDescriptionDto) => this.answerSubject.next(desc));
     this.hub.on('ReceiveIceCandidate', (candidate: RtcIceCandidateDto) => this.iceCandidateSubject.next(candidate));

@@ -71,6 +71,13 @@ export interface ReviewDto {
   createdAtUtc: string;
 }
 
+export interface BadgeDto {
+  id: number;
+  name: string;
+  description: string;
+  iconUrl: string;
+}
+
 export interface UserBadgeDto {
   badgeId: number;
   name: string;
