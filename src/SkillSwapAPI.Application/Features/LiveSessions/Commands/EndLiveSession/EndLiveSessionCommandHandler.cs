@@ -51,7 +51,12 @@ public sealed class EndLiveSessionCommandHandler(
             settledMinutes = (int)Math.Round(durationSeconds / 60.0, MidpointRounding.AwayFromZero);
         }
 
-        if (settledMinutes > 0)
+        // A revived room (rejoined after ending) settles only once per swap; the first
+        // end already wrote the ledger rows, so later ends just close the room.
+        var alreadySettled = await unitOfWork.TimeLedgerTransactions.ExistsForSwapRequestAsync(
+            swapRequest.Id, ct);
+
+        if (settledMinutes > 0 && !alreadySettled)
         {
             try
             {

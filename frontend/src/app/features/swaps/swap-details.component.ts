@@ -46,6 +46,7 @@ function toTimeOnly(value: string): string {
           <button class="btn btn-soft btn-sm" (click)="reload()">Try again</button>
         </div>
       } @else if (swap(); as s) {
+        <div class="details-layout">
         <section class="card head-card">
           <div class="row-between">
             <h2>{{ otherName(s) }}</h2>
@@ -183,6 +184,7 @@ function toTimeOnly(value: string): string {
             </div>
           </section>
         }
+        </div>
       }
     </app-shell>
   `,
@@ -232,6 +234,11 @@ function toTimeOnly(value: string): string {
     .prop-status.rejected { background: var(--danger-light); color: var(--danger); }
     .prop-by { font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px; }
     .prop-actions { display: flex; gap: 8px; margin-top: 10px; }
+
+    @media (min-width: 900px) {
+      .details-layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+      .icon-btn:hover { background: var(--primary-light); color: var(--primary); }
+    }
   `,
 })
 export class SwapDetailsComponent implements OnInit {

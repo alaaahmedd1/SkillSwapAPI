@@ -164,6 +164,15 @@ const DURATIONS = [
 
     .state-box { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 36px 16px; color: var(--text-secondary); font-size: 13.5px; }
 
+    @media (min-width: 900px) {
+      .page-title { font-size: 26px; }
+      .icon-btn:hover { background: var(--primary-light); color: var(--primary); }
+      .card { max-width: 640px; }
+      .day-row { flex-wrap: wrap; overflow-x: visible; scrollbar-width: auto; }
+      .day-row::-webkit-scrollbar { display: block; }
+      .day-chip { min-width: 60px; }
+    }
+
     .overlay { position: fixed; inset: 0; z-index: 100; background: rgba(31, 31, 61, 0.45); display: flex; align-items: center; justify-content: center; padding: 24px; }
     .modal {
       width: 100%; max-width: 380px; background: #fff; border-radius: 24px; padding: 28px 22px;

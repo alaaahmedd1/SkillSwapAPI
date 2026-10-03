@@ -5,10 +5,11 @@ import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { SwapRequestDetailsDto } from '../../core/models/domain.models';
+import { SwapRequestDetailsDto, BadgeDto } from '../../core/models/domain.models';
 import { AuthService } from '../../core/services/auth.service';
 import { SwapRequestsService } from '../../core/services/swap-requests.service';
 import { ToastService } from '../../core/services/toast.service';
+import { UsersService } from '../../core/services/users.service';
 import { extractApiError } from '../../core/utils/api-error';
 import { AppShellComponent } from '../../shared/components/app-shell/app-shell.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
@@ -51,18 +52,20 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
           <p class="rating-note">Rate your experience. {{ rating() }}/5</p>
         </section>
 
-        <section class="card">
-          <h3 class="card-title">Gift a Badge</h3>
-          <p class="card-sub">Recognize what made this exchange special (optional).</p>
-          <div class="badge-grid">
-            @for (badge of badgeOptions; track badge.name) {
-              <button class="badge-tile" [class.selected]="selectedBadge() === badge.name" (click)="toggleBadge(badge.name)">
-                <span class="badge-emoji">{{ badge.emoji }}</span>
-                <small>{{ badge.name }}</small>
-              </button>
-            }
-          </div>
-        </section>
+        @if (badges().length) {
+          <section class="card">
+            <h3 class="card-title">Gift a Badge</h3>
+            <p class="card-sub">Recognize what made this exchange special (optional).</p>
+            <div class="badge-grid">
+              @for (badge of badges(); track badge.id) {
+                <button class="badge-tile" [class.selected]="selectedBadgeId() === badge.id" (click)="toggleBadge(badge.id)" [title]="badge.description">
+                  <span class="badge-emoji">{{ badgeEmoji(badge.name) }}</span>
+                  <small>{{ badge.name }}</small>
+                </button>
+              }
+            </div>
+          </section>
+        }
 
         <section class="card">
           <h3 class="card-title">Your Feedback</h3>
@@ -128,6 +131,7 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
     .badge-tile:nth-child(2) { background: #ffa53c; }
     .badge-tile:nth-child(3) { background: #4fd1c5; }
     .badge-tile:nth-child(4) { background: #ff7a6e; }
+    .badge-tile:nth-child(5) { background: #9b8cff; }
     .badge-tile.selected { border-color: var(--text); box-shadow: 0 0 0 3px rgba(31, 31, 61, 0.15); }
     .badge-emoji { font-size: 24px; }
     .badge-tile small { font-size: 11.5px; font-weight: 600; }
@@ -136,6 +140,14 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
 
     .actions { display: flex; gap: 10px; margin-bottom: 14px; }
     .state-box { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 36px 16px; color: var(--text-secondary); font-size: 13.5px; }
+
+    @media (min-width: 900px) {
+      .page-title { font-size: 26px; }
+      .icon-btn:hover { background: var(--primary-light); color: var(--primary); }
+      .card { max-width: 640px; }
+      .badge-grid { grid-template-columns: repeat(5, 1fr); }
+      .actions .btn { flex: 0 0 auto; }
+    }
 
     .overlay { position: fixed; inset: 0; z-index: 100; background: rgba(31, 31, 61, 0.45); display: flex; align-items: center; justify-content: center; padding: 24px; }
     .modal {
@@ -154,15 +166,16 @@ export class ReviewSwapComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
   private readonly swapRequests = inject(SwapRequestsService);
+  private readonly usersService = inject(UsersService);
   private readonly toast = inject(ToastService);
 
-  // Gift-a-badge is a visual selection only — the backend has no badge-gifting endpoint yet.
-  protected readonly badgeOptions = [
-    { name: 'Best Tutor', emoji: '🎓' },
-    { name: 'Great Energy', emoji: '⏰' },
-    { name: 'Problem Solver', emoji: '💡' },
-    { name: 'Super Patient', emoji: '🌟' },
-  ];
+  private readonly badgeEmojis: Record<string, string> = {
+    'Best Tutor': '🎓',
+    'Super Patient': '🌟',
+    'Problem Solver': '💡',
+    'Great Communicator': '💬',
+    'Reliable Partner': '🤝',
+  };
 
   protected readonly swapId = signal('');
   protected readonly loading = signal(true);
@@ -171,14 +184,24 @@ export class ReviewSwapComponent implements OnInit {
   protected readonly submitting = signal(false);
   protected readonly submitted = signal(false);
   protected readonly rating = signal(0);
-  protected readonly selectedBadge = signal('');
+  protected readonly badges = signal<BadgeDto[]>([]);
+  protected readonly selectedBadgeId = signal<number | null>(null);
   protected comment = '';
 
   private swap: SwapRequestDetailsDto | null = null;
 
   async ngOnInit(): Promise<void> {
     this.swapId.set(this.route.snapshot.paramMap.get('id') ?? '');
+    void this.loadBadges();
     await this.reload();
+  }
+
+  private async loadBadges(): Promise<void> {
+    try {
+      this.badges.set(await firstValueFrom(this.usersService.getBadges()));
+    } catch {
+      // Badge gifting is optional — the review still works without the catalog.
+    }
   }
 
   protected partnerName(): string {
@@ -201,8 +224,12 @@ export class ReviewSwapComponent implements OnInit {
     return this.swap?.offeredSkill?.skillName || 'Skill exchange';
   }
 
-  protected toggleBadge(name: string): void {
-    this.selectedBadge.set(this.selectedBadge() === name ? '' : name);
+  protected toggleBadge(id: number): void {
+    this.selectedBadgeId.set(this.selectedBadgeId() === id ? null : id);
+  }
+
+  protected badgeEmoji(name: string): string {
+    return this.badgeEmojis[name] ?? '🏅';
   }
 
   protected initials(name: string): string {
@@ -225,6 +252,7 @@ export class ReviewSwapComponent implements OnInit {
           revieweeId: this.partnerId(),
           rating: this.rating(),
           comment: this.comment.trim() || null,
+          badgeId: this.selectedBadgeId(),
         })
       );
       this.toast.success('Review submitted. Thank you!');

@@ -97,12 +97,13 @@ export const routes: Routes = [
     canActivate: [requireAuthGuard],
     loadComponent: () =>
       import('./features/messages/messages.component').then((m) => m.MessagesComponent),
-  },
-  {
-    path: 'messages/:swapId',
-    canActivate: [requireAuthGuard],
-    loadComponent: () =>
-      import('./features/messages/chat-room.component').then((m) => m.ChatRoomComponent),
+    children: [
+      {
+        path: ':swapId',
+        loadComponent: () =>
+          import('./features/messages/chat-room.component').then((m) => m.ChatRoomComponent),
+      },
+    ],
   },
   {
     path: 'swaps',

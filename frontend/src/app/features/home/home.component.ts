@@ -140,7 +140,8 @@ const PAGE_SIZE = 10;
   `,
   styles: `
     :host { display: contents; }
-    .icon-btn { width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; background: var(--input-bg); color: var(--text); border-radius: 12px; }
+    .icon-btn { width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; background: var(--input-bg); color: var(--text); border-radius: 12px; transition: background 0.15s ease, color 0.15s ease; }
+    .icon-btn:hover { background: var(--primary-light); color: var(--primary); }
 
     .greeting { margin: 4px 0 12px; }
     .hello { font-size: 21px; font-weight: 700; margin: 0; }
@@ -156,15 +157,20 @@ const PAGE_SIZE = 10;
     .match-btn {
       display: inline-flex; background: #fff; color: var(--primary);
       font-size: 12.5px; font-weight: 700; padding: 9px 18px; border-radius: 999px;
+      transition: transform 0.12s ease;
     }
+    .match-btn:hover { transform: translateY(-1px); }
 
     .chips-row { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 14px; margin: 0 -2px; scrollbar-width: none; }
     .chips-row::-webkit-scrollbar { display: none; }
 
     .feed { display: flex; flex-direction: column; gap: 16px; }
-    .swap-card { padding: 18px; }
+    .swap-card { padding: 18px; transition: box-shadow 0.2s ease, transform 0.2s ease; }
+    .swap-card:hover { box-shadow: 0 10px 32px rgba(31, 31, 61, 0.11); transform: translateY(-2px); }
     .swap-head { display: flex; gap: 12px; align-items: flex-start; }
-    .swap-head.as-link { width: 100%; background: none; border: none; padding: 0; text-align: left; cursor: pointer; font-family: inherit; }
+    .swap-head.as-link { width: 100%; background: none; border: none; padding: 0; text-align: left; cursor: pointer; font-family: inherit; border-radius: 8px; }
+    .swap-head.as-link:hover .who h3 { color: var(--primary); }
+    .who h3 { transition: color 0.15s ease; }
     .avatar { width: 46px; height: 46px; border-radius: 50%; background: var(--gradient); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; flex-shrink: 0; }
     .who { flex: 1; min-width: 0; }
     .who h3 { font-size: 15px; font-weight: 600; margin: 0; }
@@ -191,6 +197,27 @@ const PAGE_SIZE = 10;
     .end-note { font-size: 12.5px; color: var(--text-muted); }
     .state-box { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 36px 16px; color: var(--text-secondary); font-size: 13.5px; }
     .state-art { width: 150px; height: 150px; object-fit: cover; border-radius: var(--radius-lg); }
+
+    @media (min-width: 768px) {
+      .greeting { margin: 8px 0 16px; }
+      .hello { font-size: 26px; }
+      .hello-sub { font-size: 14px; }
+
+      .match-banner {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 20px; padding: 20px 24px;
+      }
+      .match-sub { margin: 3px 0 0; }
+
+      .chips-row { flex-wrap: wrap; overflow-x: visible; scrollbar-width: auto; }
+      .chips-row::-webkit-scrollbar { display: block; }
+
+      .feed {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+        gap: 20px;
+      }
+    }
   `,
 })
 export class HomeComponent implements OnInit {

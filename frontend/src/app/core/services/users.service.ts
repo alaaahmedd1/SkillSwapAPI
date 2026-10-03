@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { PagedResult } from '../models/api.models';
-import { ReviewDto, UserBadgeDto, UserSearchResultDto } from '../models/domain.models';
+import { ReviewDto, UserBadgeDto, UserSearchResultDto, BadgeDto } from '../models/domain.models';
 
 @Injectable({ providedIn: 'root' })
 export class UsersService {
@@ -27,5 +27,9 @@ export class UsersService {
 
   getUserBadges(userId: string): Observable<UserBadgeDto[]> {
     return this.http.get<UserBadgeDto[]>(`${this.baseUrl}/${userId}/badges`);
+  }
+
+  getBadges(): Observable<BadgeDto[]> {
+    return this.http.get<BadgeDto[]>(`${environment.apiUrl}/api/v1/badges`);
   }
 }
