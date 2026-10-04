@@ -46,173 +46,179 @@ const REVIEWS_PAGE_SIZE = 5;
           <button class="btn btn-soft btn-sm" (click)="reload()">Try again</button>
         </div>
       } @else if (profile(); as p) {
-        <section class="card header-card">
-          <div class="head-row">
-            <span class="avatar">{{ initials(p.firstName, p.lastName) }}</span>
-            <div class="head-main">
-              <div class="name-row">
-                <h2>{{ p.firstName }} {{ p.lastName }}</h2>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="#2fbf71" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 2.4 3.4-.5 1 3.3 3 1.6-1.4 3.2 1.4 3.2-3 1.6-1 3.3-3.4-.5L12 22l-2.4-2.4-3.4.5-1-3.3-3-1.6 1.4-3.2L2.2 8.8l3-1.6 1-3.3 3.4.5z"/><path d="m9 12 2 2 4-4"/></svg>
-              </div>
-              @if (p.title) { <span class="title-pill">{{ p.title }}</span> }
-              <p class="loc">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                {{ locationLabel(p) }}
-              </p>
-              <app-rating-stars [rating]="p.averageRating" [count]="p.totalReviewsCount" />
-            </div>
-          </div>
-          <a class="btn btn-primary btn-edit" routerLink="/profile/edit">Edit Profile &amp; Availability</a>
-        </section>
-
-        @if (balance(); as b) {
-          <section class="card ledger-card">
-            <div class="ledger-head">
-              <span class="ledger-icon">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-              </span>
-              <b class="ledger-value">{{ hoursLabel(b.balanceMinutes) }}</b>
-              <span class="ledger-label">Hours Earned</span>
-              <a class="ledger-link" routerLink="/wallet">Ledger →</a>
-            </div>
-            <p class="ledger-sub">Spend hours to learn — earn them back by teaching.</p>
-          </section>
-        }
-
-        <section class="card">
-          <div class="section-head">
-            <h3>Skill Inventory</h3>
-            <button class="btn btn-soft btn-sm" (click)="toggleAddSkill()">
-              {{ addingSkill() ? 'Close' : '+ Add' }}
-            </button>
-          </div>
-
-          <div class="tabs">
-            <button class="tab" [class.active]="skillTab() === 'teach'" (click)="skillTab.set('teach')">
-              Can Teach <span class="tab-count">{{ offeredSkills().length }}</span>
-            </button>
-            <button class="tab" [class.active]="skillTab() === 'learn'" (click)="skillTab.set('learn')">
-              Wants to Learn <span class="tab-count">{{ seekingSkills().length }}</span>
-            </button>
-          </div>
-
-          @if (addingSkill()) {
-            <div class="add-skill">
-              <div class="field">
-                <label for="skill-pick">Skill</label>
-                <select id="skill-pick" class="input" [value]="newSkillId()" (change)="newSkillId.set($any($event.target).value)">
-                  <option value="" disabled>Select a skill</option>
-                  @for (skill of addableSkills(); track skill.id) {
-                    <option [value]="skill.id">{{ skill.name }}</option>
-                  }
-                </select>
-              </div>
-              <div class="grid-2">
-                <div class="field">
-                  <label for="skill-type">I want to</label>
-                  <select id="skill-type" class="input" [value]="newType()" (change)="newType.set(+$any($event.target).value)">
-                    <option [value]="SkillType.Offered">Teach (Offered)</option>
-                    <option [value]="SkillType.Seeking">Learn (Seeking)</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="skill-level">Level</label>
-                  <select id="skill-level" class="input" [value]="newProficiency()" (change)="newProficiency.set(+$any($event.target).value)">
-                    <option [value]="ProficiencyLevel.Beginner">Beginner</option>
-                    <option [value]="ProficiencyLevel.Intermediate">Intermediate</option>
-                    <option [value]="ProficiencyLevel.Expert">Expert</option>
-                  </select>
-                </div>
-              </div>
-              <div class="field">
-                <label for="skill-years">Years of experience <span class="opt">(optional)</span></label>
-                <input id="skill-years" type="number" min="0" max="60" class="input" placeholder="e.g. 3" [value]="newYears()" (input)="newYears.set($any($event.target).value)" />
-              </div>
-              @if (skillError()) { <p class="field-error">{{ skillError() }}</p> }
-              <button class="btn btn-primary btn-sm" [disabled]="savingSkill() || !newSkillId()" (click)="addSkill()">
-                @if (savingSkill()) { <app-spinner [size]="16" /> } @else { Add Skill }
-              </button>
-            </div>
-          }
-
-          @if (activeSkills().length) {
-            <div class="skill-list">
-              @for (skill of activeSkills(); track skill.id) {
-                <div class="skill-row">
-                  <div class="skill-main">
-                    <b>{{ skill.skillName }}</b>
-                    <span class="skill-meta">
-                      <span class="lvl lvl-{{ skill.proficiencyLevel }}">{{ levelLabel(skill.proficiencyLevel) }}</span>
-                      @if (skill.yearsOfExperience !== null) { <small>{{ skill.yearsOfExperience }}y exp</small> }
-                    </span>
+        <div class="profile-layout">
+          <div class="profile-col">
+            <section class="card header-card">
+              <div class="head-row">
+                <span class="avatar">{{ initials(p.firstName, p.lastName) }}</span>
+                <div class="head-main">
+                  <div class="name-row">
+                    <h2>{{ p.firstName }} {{ p.lastName }}</h2>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="#2fbf71" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 2.4 3.4-.5 1 3.3 3 1.6-1.4 3.2 1.4 3.2-3 1.6-1 3.3-3.4-.5L12 22l-2.4-2.4-3.4.5-1-3.3-3-1.6 1.4-3.2L2.2 8.8l3-1.6 1-3.3 3.4.5z"/><path d="m9 12 2 2 4-4"/></svg>
                   </div>
-                  <button class="remove" (click)="removeSkill(skill)" [disabled]="removingSkillId() === skill.id" aria-label="Remove {{ skill.skillName }}">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                  @if (p.title) { <span class="title-pill">{{ p.title }}</span> }
+                  <p class="loc">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    {{ locationLabel(p) }}
+                  </p>
+                  <app-rating-stars [rating]="p.averageRating" [count]="p.totalReviewsCount" />
+                </div>
+              </div>
+              <a class="btn btn-primary btn-edit" routerLink="/profile/edit">Edit Profile &amp; Availability</a>
+            </section>
+
+            @if (balance(); as b) {
+            <section class="card ledger-card">
+              <div class="ledger-head">
+                <span class="ledger-icon">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </span>
+                <b class="ledger-value">{{ hoursLabel(b.balanceMinutes) }}</b>
+                <span class="ledger-label">Hours Earned</span>
+                <a class="ledger-link" routerLink="/wallet">Ledger →</a>
+              </div>
+              <p class="ledger-sub">Spend hours to learn — earn them back by teaching.</p>
+            </section>
+            }
+          </div>
+
+          <div class="profile-col">
+            <section class="card">
+              <div class="section-head">
+                <h3>Skill Inventory</h3>
+                <button class="btn btn-soft btn-sm" (click)="toggleAddSkill()">
+                  {{ addingSkill() ? 'Close' : '+ Add' }}
+                </button>
+              </div>
+
+              <div class="tabs">
+                <button class="tab" [class.active]="skillTab() === 'teach'" (click)="skillTab.set('teach')">
+                  Can Teach <span class="tab-count">{{ offeredSkills().length }}</span>
+                </button>
+                <button class="tab" [class.active]="skillTab() === 'learn'" (click)="skillTab.set('learn')">
+                  Wants to Learn <span class="tab-count">{{ seekingSkills().length }}</span>
+                </button>
+              </div>
+
+              @if (addingSkill()) {
+                <div class="add-skill">
+                  <div class="field">
+                    <label for="skill-pick">Skill</label>
+                    <select id="skill-pick" class="input" [value]="newSkillId()" (change)="newSkillId.set($any($event.target).value)">
+                      <option value="" disabled>Select a skill</option>
+                      @for (skill of addableSkills(); track skill.id) {
+                        <option [value]="skill.id">{{ skill.name }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div class="grid-2">
+                    <div class="field">
+                      <label for="skill-type">I want to</label>
+                      <select id="skill-type" class="input" [value]="newType()" (change)="newType.set(+$any($event.target).value)">
+                        <option [value]="SkillType.Offered">Teach (Offered)</option>
+                        <option [value]="SkillType.Seeking">Learn (Seeking)</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label for="skill-level">Level</label>
+                      <select id="skill-level" class="input" [value]="newProficiency()" (change)="newProficiency.set(+$any($event.target).value)">
+                        <option [value]="ProficiencyLevel.Beginner">Beginner</option>
+                        <option [value]="ProficiencyLevel.Intermediate">Intermediate</option>
+                        <option [value]="ProficiencyLevel.Expert">Expert</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="skill-years">Years of experience <span class="opt">(optional)</span></label>
+                    <input id="skill-years" type="number" min="0" max="60" class="input" placeholder="e.g. 3" [value]="newYears()" (input)="newYears.set($any($event.target).value)" />
+                  </div>
+                  @if (skillError()) { <p class="field-error">{{ skillError() }}</p> }
+                  <button class="btn btn-primary btn-sm" [disabled]="savingSkill() || !newSkillId()" (click)="addSkill()">
+                    @if (savingSkill()) { <app-spinner [size]="16" /> } @else { Add Skill }
                   </button>
                 </div>
               }
-            </div>
-          } @else {
-            <p class="empty-line">
-              {{ skillTab() === 'teach' ? 'No teaching skills yet — add what you can teach.' : 'No learning goals yet — add what you want to learn.' }}
-            </p>
-          }
-        </section>
 
-        <section class="card">
-          <div class="section-head">
-            <h3>Recognized Mastery &amp; Badges</h3>
-          </div>
-          @if (badgesLoading()) {
-            <div class="state-box tight"><app-spinner [size]="22" /></div>
-          } @else if (!badges().length) {
-            <p class="empty-line">No badges yet — complete swaps to earn them.</p>
-          } @else {
-            <div class="badge-chips">
-              @for (badge of badges(); track badge.badgeId) {
-                <span class="badge-chip" [title]="badge.description">
-                  @if (badge.iconUrl) {
-                    <img [src]="badge.iconUrl" alt="" />
-                  } @else {
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"/><path d="m8.5 14-1.5 7 5-3 5 3-1.5-7"/></svg>
+              @if (activeSkills().length) {
+                <div class="skill-list">
+                  @for (skill of activeSkills(); track skill.id) {
+                    <div class="skill-row">
+                      <div class="skill-main">
+                        <b>{{ skill.skillName }}</b>
+                        <span class="skill-meta">
+                          <span class="lvl lvl-{{ skill.proficiencyLevel }}">{{ levelLabel(skill.proficiencyLevel) }}</span>
+                          @if (skill.yearsOfExperience !== null) { <small>{{ skill.yearsOfExperience }}y exp</small> }
+                        </span>
+                      </div>
+                      <button class="remove" (click)="removeSkill(skill)" [disabled]="removingSkillId() === skill.id" aria-label="Remove {{ skill.skillName }}">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                      </button>
+                    </div>
                   }
-                  {{ badge.name }}
-                </span>
+                </div>
+              } @else {
+                <p class="empty-line">
+                  {{ skillTab() === 'teach' ? 'No teaching skills yet — add what you can teach.' : 'No learning goals yet — add what you want to learn.' }}
+                </p>
               }
-            </div>
-          }
-        </section>
+            </section>
 
-        <section class="card">
-          <div class="section-head">
-            <h3>Peer Reviews</h3>
+            <section class="card">
+              <div class="section-head">
+                <h3>Recognized Mastery &amp; Badges</h3>
+              </div>
+              @if (badgesLoading()) {
+                <div class="state-box tight"><app-spinner [size]="22" /></div>
+              } @else if (!badges().length) {
+                <p class="empty-line">No badges yet — complete swaps to earn them.</p>
+              } @else {
+                <div class="badge-chips">
+                  @for (badge of badges(); track badge.badgeId) {
+                    <span class="badge-chip" [title]="badge.description">
+                      @if (badge.iconUrl) {
+                        <img [src]="badge.iconUrl" alt="" />
+                      } @else {
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"/><path d="m8.5 14-1.5 7 5-3 5 3-1.5-7"/></svg>
+                      }
+                      {{ badge.name }}
+                    </span>
+                  }
+                </div>
+              }
+            </section>
+
+            <section class="card">
+              <div class="section-head">
+                <h3>Peer Reviews</h3>
+              </div>
+              @if (reviewsLoading() && !reviews().length) {
+                <div class="state-box tight"><app-spinner [size]="22" /></div>
+              } @else if (!reviews().length) {
+                <p class="empty-line">No reviews yet.</p>
+              } @else {
+                <div class="review-list">
+                  @for (review of reviews(); track review.id) {
+                    <article class="review">
+                      <div class="review-head">
+                        <b>{{ review.reviewerFirstName }} {{ review.reviewerLastName }}</b>
+                        <app-rating-stars [rating]="review.rating" />
+                      </div>
+                      @if (review.comment) { <p class="review-comment">{{ review.comment }}</p> }
+                      <small class="review-date">{{ review.createdAtUtc | date: 'MMM d, yyyy' }}</small>
+                    </article>
+                  }
+                </div>
+                @if (hasMoreReviews()) {
+                  <button class="btn btn-outline btn-sm more-btn" [disabled]="reviewsLoading()" (click)="loadMoreReviews()">
+                    @if (reviewsLoading()) { <app-spinner [size]="16" /> } @else { Load more }
+                  </button>
+                }
+              }
+            </section>
           </div>
-          @if (reviewsLoading() && !reviews().length) {
-            <div class="state-box tight"><app-spinner [size]="22" /></div>
-          } @else if (!reviews().length) {
-            <p class="empty-line">No reviews yet.</p>
-          } @else {
-            <div class="review-list">
-              @for (review of reviews(); track review.id) {
-                <article class="review">
-                  <div class="review-head">
-                    <b>{{ review.reviewerFirstName }} {{ review.reviewerLastName }}</b>
-                    <app-rating-stars [rating]="review.rating" />
-                  </div>
-                  @if (review.comment) { <p class="review-comment">{{ review.comment }}</p> }
-                  <small class="review-date">{{ review.createdAtUtc | date: 'MMM d, yyyy' }}</small>
-                </article>
-              }
-            </div>
-            @if (hasMoreReviews()) {
-              <button class="btn btn-outline btn-sm more-btn" [disabled]="reviewsLoading()" (click)="loadMoreReviews()">
-                @if (reviewsLoading()) { <app-spinner [size]="16" /> } @else { Load more }
-              </button>
-            }
-          }
-        </section>
+        </div>
 
-        <button class="btn btn-danger-outline" (click)="logout()">Sign Out</button>
+        <button class="btn btn-danger-outline btn-signout" (click)="logout()">Sign Out</button>
       }
     </app-shell>
   `,
@@ -281,6 +287,20 @@ const REVIEWS_PAGE_SIZE = 5;
     .review-comment { font-size: 13px; color: var(--text-secondary); line-height: 1.55; margin: 6px 0; }
     .review-date { font-size: 11px; color: var(--text-muted); }
     .more-btn { margin: 14px auto 0; display: flex; }
+
+    @media (min-width: 900px) {
+      .profile-layout { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr); gap: 20px; align-items: start; }
+      .profile-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+      .profile-col .card { margin-bottom: 0; }
+      .btn-edit { width: auto; align-self: flex-start; padding: 12px 22px; }
+      .btn-signout { width: auto; }
+      .name-row h2 { font-size: 20px; }
+      .ledger-link:hover { text-decoration: underline; }
+      .skill-row { transition: background 0.15s ease; }
+      .skill-row:hover { background: var(--primary-soft); }
+      .badge-chip { transition: filter 0.15s ease; }
+      .badge-chip:hover { filter: brightness(0.96); }
+    }
   `,
 })
 export class ProfileComponent implements OnInit {

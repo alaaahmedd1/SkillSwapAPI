@@ -62,9 +62,14 @@ a {
   text-decoration: none;
 }
 
-// ─── App frame: mobile-first, centered on desktop ─────────────────────────
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+// ─── App frame: fluid, desktop-first ──────────────────────────────────────
 .app-frame {
-  max-width: 480px;
   margin: 0 auto;
   min-height: 100dvh;
   background: var(--bg);
@@ -84,7 +89,8 @@ a {
   font-weight: 600;
   padding: 15px 20px;
   cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  transition: transform 0.12s ease, box-shadow 0.2s ease, opacity 0.2s ease,
+    background 0.15s ease, border-color 0.15s ease;
 
   &:active {
     transform: scale(0.98);
@@ -95,29 +101,58 @@ a {
     cursor: not-allowed;
     transform: none;
   }
+
+  @media (min-width: 768px) {
+    width: auto;
+    padding: 12px 22px;
+    font-size: 14px;
+  }
+}
+
+.btn-block {
+  @media (min-width: 768px) {
+    width: 100%;
+  }
 }
 
 .btn-primary {
   background: var(--gradient);
   color: #fff;
   box-shadow: var(--shadow-btn);
+
+  &:not(:disabled):hover {
+    filter: brightness(1.07);
+    box-shadow: 0 10px 22px rgba(124, 92, 252, 0.4);
+  }
 }
 
 .btn-outline {
   background: #fff;
   color: var(--primary);
   border: 1.5px solid var(--primary);
+
+  &:not(:disabled):hover {
+    background: var(--primary-soft);
+  }
 }
 
 .btn-soft {
   background: var(--primary-light);
   color: var(--primary);
+
+  &:not(:disabled):hover {
+    background: #e4ddff;
+  }
 }
 
 .btn-danger-outline {
   background: #fff;
   color: var(--danger);
   border: 1.5px solid var(--danger);
+
+  &:not(:disabled):hover {
+    background: var(--danger-light);
+  }
 }
 
 .btn-sm {
@@ -224,6 +259,11 @@ a {
   white-space: nowrap;
   transition: all 0.15s ease;
 
+  &:not(.active):hover {
+    background: #ececf5;
+    color: var(--text);
+  }
+
   &.active {
     background: var(--primary);
     color: #fff;
@@ -292,4 +332,15 @@ a {
 
 .page-enter {
   animation: fadeUp 0.35s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter {
+    animation: none;
+  }
+
+  .btn,
+  .chip {
+    transition: none;
+  }
 }

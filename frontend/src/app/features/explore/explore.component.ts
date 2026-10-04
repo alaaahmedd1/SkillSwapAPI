@@ -49,13 +49,23 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
     .page-title span { background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
     .page-sub { font-size: 13px; color: var(--text-secondary); margin: 0 0 16px; }
     .catalog { display: flex; flex-direction: column; gap: 16px; }
-    .cat-card { padding: 18px; }
+    .cat-card { padding: 18px; transition: box-shadow 0.2s ease, transform 0.2s ease; }
+    .cat-card:hover { box-shadow: 0 10px 32px rgba(31, 31, 61, 0.11); transform: translateY(-2px); }
     .cat-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
     .cat-head h3 { font-size: 15.5px; font-weight: 600; margin: 0; }
     .count { font-size: 11.5px; font-weight: 600; color: var(--primary); background: var(--primary-light); padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
     .cat-desc { font-size: 12.5px; color: var(--text-secondary); margin: 8px 0 0; }
     .cat-skills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
     .state-box { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 36px 16px; color: var(--text-secondary); font-size: 13.5px; }
+
+    @media (min-width: 768px) {
+      .page-title { font-size: 26px; }
+      .catalog {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 20px;
+      }
+    }
   `,
 })
 export class ExploreComponent implements OnInit {

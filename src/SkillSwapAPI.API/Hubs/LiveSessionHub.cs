@@ -1,11 +1,14 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using SkillSwapAPI.Application.Features.LiveSessions.Commands.EndLiveSession;
 using SkillSwapAPI.Application.Features.LiveSessions.Commands.SaveWhiteboardSnapshot;
 using SkillSwapAPI.Application.Features.LiveSessions.Commands.StartLiveSession;
 using SkillSwapAPI.Application.Features.LiveSessions.Dtos;
 using SkillSwapAPI.Application.Features.LiveSessions.Queries.GetLiveSessionAccess;
 using SkillSwapAPI.Application.Features.LiveSessions.Queries.GetLiveSessionElapsed;
+using SkillSwapAPI.Application.Features.LiveSessions.Queries.GetLiveSessionRoomState;
+using SkillSwapAPI.Domain.Modules.LiveSessions.Enums;
 using System.Collections.Concurrent;
 using System.Security.Claims;
 
@@ -29,15 +32,21 @@ public sealed class LiveSessionHub(ISender mediator) : Hub
 
     public async Task LeaveRoom(Guid swapId)
     {
+        var userId = GetUserId();
         Memberships.TryRemove(Context.ConnectionId, out _);
 
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, RoomGroupName(swapId), Context.ConnectionAborted);
+        await EndRoomIfAbandonedAsync(swapId, userId);
     }
 
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        Memberships.TryRemove(Context.ConnectionId, out _);
-        return base.OnDisconnectedAsync(exception);
+        if (Memberships.TryRemove(Context.ConnectionId, out var membership))
+        {
+            await EndRoomIfAbandonedAsync(membership.SwapId, membership.UserId);
+        }
+
+        await base.OnDisconnectedAsync(exception);
     }
 
     public async Task<LiveSessionRoomDto> StartSession(Guid swapId)
@@ -155,6 +164,33 @@ public sealed class LiveSessionHub(ISender mediator) : Hub
         if (!Memberships.TryGetValue(Context.ConnectionId, out var membership) || membership.SwapId != swapId)
         {
             throw new HubException("Join the room before sending data.");
+        }
+    }
+
+    private async Task EndRoomIfAbandonedAsync(Guid swapId, Guid userId)
+    {
+        var anyRemaining = Memberships.Values.Any(m => m.SwapId == swapId);
+        if (anyRemaining)
+        {
+            return;
+        }
+
+        try
+        {
+            var state = await mediator.Send(
+                new GetLiveSessionRoomStateQuery(swapId, userId), Context.ConnectionAborted);
+
+            if (state.IsError || state.Value.Status != LiveSessionStatus.InProgress)
+            {
+                return;
+            }
+
+            await mediator.Send(
+                new EndLiveSessionCommand(state.Value.RoomId, userId), Context.ConnectionAborted);
+        }
+        catch
+        {
+            // Abandonment is best-effort; a still-open room behaves as before.
         }
     }
 

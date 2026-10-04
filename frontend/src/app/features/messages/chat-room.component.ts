@@ -9,20 +9,15 @@ import { ChatHubService } from '../../core/services/chat-hub.service';
 import { ConversationsService } from '../../core/services/conversations.service';
 import { SwapRequestsService } from '../../core/services/swap-requests.service';
 import { extractApiError } from '../../core/utils/api-error';
-import { AppShellComponent } from '../../shared/components/app-shell/app-shell.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 
 const HISTORY_PAGE_SIZE = 50;
 
 @Component({
   selector: 'app-chat-room',
-  imports: [DatePipe, RouterLink, AppShellComponent, LoadingSpinnerComponent],
+  imports: [DatePipe, RouterLink, LoadingSpinnerComponent],
   template: `
-    <app-shell>
-      <a class="icon-btn" topbar-actions routerLink="/messages" aria-label="Back to messages">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5m7-7-7 7 7 7"/></svg>
-      </a>
-
+    <div class="chat-pane">
       @if (loading()) {
         <div class="state-box"><app-spinner [size]="32" /></div>
       } @else if (error()) {
@@ -33,6 +28,9 @@ const HISTORY_PAGE_SIZE = 50;
       } @else {
         <header class="chat-head">
           <div class="peer">
+            <a class="chat-back" routerLink="/messages" aria-label="Back to messages">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5m7-7-7 7 7 7"/></svg>
+            </a>
             <span class="avatar">{{ peerInitials() }}</span>
             <div>
               <b>{{ peerName() }}</b>
@@ -79,15 +77,17 @@ const HISTORY_PAGE_SIZE = 50;
           </button>
         </form>
       }
-    </app-shell>
+    </div>
   `,
   styles: `
     :host { display: contents; }
-    .icon-btn { width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; background: var(--input-bg); color: var(--text); border-radius: 12px; }
+    .chat-pane { display: flex; flex-direction: column; }
     .state-box { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 36px 16px; color: var(--text-secondary); font-size: 13.5px; }
 
     .chat-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
     .peer { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .chat-back { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; background: var(--input-bg); color: var(--text); border-radius: 10px; flex-shrink: 0; transition: background 0.15s ease, color 0.15s ease; }
+    .chat-back:hover { background: var(--primary-light); color: var(--primary); }
     .avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--gradient); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0; }
     .peer b { font-size: 14.5px; }
     .sub { font-size: 11.5px; color: var(--text-muted); margin: 2px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -110,6 +110,13 @@ const HISTORY_PAGE_SIZE = 50;
     .composer .input { border-radius: 999px; }
     .send-btn { width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--gradient); color: #fff; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: var(--shadow-btn); }
     .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    @media (min-width: 900px) {
+      .chat-pane { height: 100%; min-height: 0; }
+      .chat-back { display: none; }
+      .thread { flex: 1; min-height: 0; overflow-y: auto; padding-right: 4px; }
+      .composer { position: static; padding: 10px 0 0; }
+    }
   `,
 })
 export class ChatRoomComponent implements OnInit, OnDestroy {
