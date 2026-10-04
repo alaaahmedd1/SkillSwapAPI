@@ -215,6 +215,16 @@ const BLOCKS = [
 
     .actions { display: flex; gap: 10px; margin-bottom: 14px; }
     .state-box { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 36px 16px; color: var(--text-secondary); font-size: 13.5px; }
+
+    @media (min-width: 900px) {
+      .page-title { font-size: 26px; }
+      .card { max-width: 720px; }
+      .actions { max-width: 720px; }
+      .actions .btn { width: auto; flex: 0 0 auto; }
+      .icon-btn { transition: background 0.15s ease, color 0.15s ease; }
+      .icon-btn:hover { background: var(--primary-soft); color: var(--primary); }
+      .slot:hover { border-color: var(--primary); }
+    }
   `,
 })
 export class EditProfileComponent implements OnInit {

@@ -131,6 +131,14 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
 
     .actions { display: flex; flex-direction: column; gap: 10px; margin: 4px 0 12px; }
     .state-box { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 36px 16px; color: var(--text-secondary); font-size: 13.5px; }
+
+    @media (min-width: 900px) {
+      .card, .partner-card, .head-card { max-width: 640px; }
+      .actions { flex-direction: row; }
+      .actions .btn { width: auto; }
+      .icon-btn { transition: background 0.15s ease, color 0.15s ease; }
+      .icon-btn:hover { background: var(--primary-soft); color: var(--primary); }
+    }
   `,
 })
 export class TransactionDetailsComponent implements OnInit {
