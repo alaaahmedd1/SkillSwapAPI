@@ -64,6 +64,15 @@ const STORAGE_KEY = 'ss.onboarded';
     .actions { display: flex; gap: 12px; }
     .actions .next { flex: 1; }
     .actions .btn-outline { width: 56px; flex-shrink: 0; }
+
+    @media (min-width: 768px) {
+      .onboarding { max-width: 720px; margin: 0 auto; padding-top: 40px; }
+      .art { max-width: 400px; }
+      .copy h1 { font-size: 30px; }
+      .copy p { max-width: 420px; font-size: 16px; }
+      .actions { justify-content: center; }
+      .actions .next { flex: 0 0 auto; padding: 14px 34px; }
+    }
   `,
 })
 export class OnboardingComponent implements OnInit {

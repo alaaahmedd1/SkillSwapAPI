@@ -73,14 +73,16 @@ function formatHours(minutes: number): string {
             </div>
           </div>
 
-          <button class="btn btn-primary" (click)="openTopUp()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8m-4-4h8"/></svg>
-            Top-Up Credits
-          </button>
-          <a class="btn btn-outline" routerLink="/profile">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/></svg>
-            Teach &amp; Earn
-          </a>
+          <div class="actions">
+            <button class="btn btn-primary" (click)="openTopUp()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8m-4-4h8"/></svg>
+              Top-Up Credits
+            </button>
+            <a class="btn btn-outline" routerLink="/profile">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/></svg>
+              Teach &amp; Earn
+            </a>
+          </div>
         </section>
 
         <section class="card">
@@ -126,6 +128,7 @@ function formatHours(minutes: number): string {
     .page-sub { font-size: 13px; color: var(--text-secondary); margin: 0 0 16px; }
 
     .balance-card { padding: 26px 20px; display: flex; flex-direction: column; gap: 18px; }
+    .actions { display: flex; flex-direction: column; gap: 10px; }
     .ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
     .ring {
       --pct: 0.5;
@@ -177,6 +180,16 @@ function formatHours(minutes: number): string {
     .state-box { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 36px 16px; color: var(--text-secondary); font-size: 13.5px; }
     .state-box.tight { padding: 16px; }
     .empty-line { font-size: 12.5px; color: var(--text-muted); margin: 4px 0; }
+
+    @media (min-width: 900px) {
+      .page-title { font-size: 26px; }
+      .balance-card { max-width: 560px; }
+      .actions { flex-direction: row; }
+      .actions .btn { width: auto; }
+      .tx-row { border-radius: var(--radius-sm); padding: 12px 10px; transition: background 0.15s ease; }
+      .tx-row:hover { background: var(--primary-soft); }
+      .text-link:hover { text-decoration: underline; }
+    }
   `,
 })
 export class WalletComponent implements OnInit {

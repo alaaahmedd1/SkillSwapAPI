@@ -24,4 +24,14 @@ export const AUTH_PAGE_STYLES = `
   .form-row { display: flex; align-items: center; justify-content: space-between; margin: -6px 0 18px; }
   .checkbox-row { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--text-secondary); user-select: none; }
   .checkbox-row input { width: 17px; height: 17px; accent-color: var(--primary); margin: 0; cursor: pointer; }
+
+  @media (min-width: 768px) {
+    .auth-page { align-items: center; padding: 48px 24px 64px; }
+    .auth-page > * { width: 100%; max-width: 440px; }
+    h1 { font-size: 28px; }
+    .back { transition: background 0.15s ease, color 0.15s ease; }
+    .back:hover { background: var(--primary-soft); color: var(--primary); }
+    .social-btn:hover { border-color: var(--primary); }
+    .social-btn:active { transform: none; }
+  }
 `;

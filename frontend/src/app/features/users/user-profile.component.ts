@@ -212,6 +212,19 @@ const REVIEWS_PAGE_SIZE = 5;
     .review-date { font-size: 11px; color: var(--text-muted); }
     .empty-line { font-size: 12.5px; color: var(--text-muted); margin: 4px 0; }
     .more-btn { margin: 14px auto 0; display: flex; }
+
+    @media (min-width: 900px) {
+      .hero { border-radius: var(--radius-lg); margin: 0 0 20px; padding: 32px 28px; }
+      .hero-top { flex-direction: row; text-align: left; gap: 18px; }
+      .hero-name h2 { justify-content: flex-start; font-size: 22px; }
+      .hero-stats { justify-content: flex-start; }
+      .tabs { max-width: 480px; }
+      .tab:hover:not(.active) { background: var(--primary-soft); color: var(--primary); }
+      .btn-cta { width: auto; padding: 13px 28px; display: flex; margin: 0 auto 10px; }
+      .badge-grid { grid-template-columns: repeat(4, 1fr); }
+      .badge-item { transition: transform 0.15s ease; }
+      .badge-item:hover { transform: translateY(-2px); }
+    }
   `,
 })
 export class UserProfileComponent implements OnInit {

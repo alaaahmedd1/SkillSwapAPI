@@ -103,6 +103,17 @@ const PAGE_SIZE = 10;
 
     .more { display: flex; justify-content: center; margin-top: 18px; }
     .state-box { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 36px 16px; color: var(--text-secondary); font-size: 13.5px; }
+
+    @media (min-width: 900px) {
+      .page-title { font-size: 26px; }
+      .filters { flex-direction: row; max-width: 480px; }
+      .filters .chip { flex: 1; padding: 10px; }
+      .list { max-width: 760px; }
+      .tx-row { transition: box-shadow 0.15s ease, transform 0.15s ease; }
+      .tx-row:hover { box-shadow: 0 6px 20px rgba(31, 31, 61, 0.08); transform: translateY(-1px); }
+      .icon-btn { transition: background 0.15s ease, color 0.15s ease; }
+      .icon-btn:hover { background: var(--primary-soft); color: var(--primary); }
+    }
   `,
 })
 export class TransactionHistoryComponent implements OnInit {

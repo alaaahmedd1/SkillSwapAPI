@@ -105,6 +105,17 @@ import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.comp
     .textarea { resize: none; line-height: 1.5; }
     @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
     @keyframes sheet-in { from { transform: translateY(60px); opacity: 0.6; } to { transform: translateY(0); opacity: 1; } }
+
+    @media (min-width: 640px) {
+      .backdrop { align-items: center; padding: 24px; }
+      .dialog-card {
+        max-width: 460px; border-radius: var(--radius-lg);
+        padding: 30px 26px 26px;
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22);
+        animation: pop-in 0.22s ease both;
+      }
+      @keyframes pop-in { from { transform: scale(0.96); opacity: 0; } to { transform: none; opacity: 1; } }
+    }
   `,
 })
 export class ProposeSwapDialogComponent implements OnInit {

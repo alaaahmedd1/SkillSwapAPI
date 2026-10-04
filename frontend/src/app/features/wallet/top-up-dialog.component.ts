@@ -114,6 +114,18 @@ type Step = 'packages' | 'payment' | 'success' | 'failed';
     @keyframes sheetUp { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
     .grabber { display: block; width: 44px; height: 5px; border-radius: 999px; background: var(--border); margin: 0 auto 14px; }
 
+    @media (min-width: 640px) {
+      .overlay { align-items: center; padding: 24px; }
+      .sheet {
+        max-width: 460px; border-radius: var(--radius-lg);
+        padding: 22px 24px 24px;
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22);
+        animation: pop-in 0.22s ease both;
+      }
+      .grabber { display: none; }
+      @keyframes pop-in { from { transform: scale(0.96); opacity: 0; } to { transform: none; opacity: 1; } }
+    }
+
     h3 { font-size: 17px; font-weight: 700; margin: 0; }
     .sub { font-size: 12.5px; color: var(--text-secondary); margin: 6px 0 16px; }
 

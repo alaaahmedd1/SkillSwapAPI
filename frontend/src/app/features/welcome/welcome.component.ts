@@ -34,6 +34,14 @@ import { RouterLink } from '@angular/router';
     .copy p { font-size: 15px; line-height: 1.65; color: var(--text-secondary); margin: 12px auto 0; max-width: 300px; }
     .actions { display: flex; flex-direction: column; gap: 14px; }
     .guest { align-self: center; font-size: 14px; }
+
+    @media (min-width: 768px) {
+      .welcome { align-items: center; justify-content: center; padding: 64px 24px; }
+      .hero img { max-width: 400px; }
+      .copy h1 { font-size: 34px; }
+      .copy p { max-width: 380px; font-size: 16px; }
+      .actions { width: 100%; max-width: 380px; }
+    }
   `,
 })
 export class WelcomeComponent {}
