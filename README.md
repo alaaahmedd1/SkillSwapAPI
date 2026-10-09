@@ -5,7 +5,12 @@
 SkillSwap is a platform that enables people to teach what they know and learn what they need without relying on traditional monetary payments. Users exchange knowledge through structured learning sessions, earning time credits by teaching and spending them to learn new skills.
 
 ---
+## Links
+You can see our workflow through these links:
+* [PRD](https://drive.google.com/drive/folders/1lj3Y2GVxgSYBydHbzTyX7M8r9gD9BZ7t?usp=sharing)
+* [Jira](https://coinershot.atlassian.net/jira/software/projects/SSS/pages?atlOrigin=eyJpIjoiNTkzOGI4ZTJjYjg3NDI4Mzg2MzI0ZDVkOTM5MDFkMzgiLCJwIjoiaiJ9)
 
+---
 ## Table of Contents
 
 * [Overview](#overview)
