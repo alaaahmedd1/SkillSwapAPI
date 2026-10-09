@@ -8,7 +8,7 @@ SkillSwap is a platform that enables people to teach what they know and learn wh
 ## Links
 You can see our workflow through these links:
 * [PRD](https://drive.google.com/drive/folders/1lj3Y2GVxgSYBydHbzTyX7M8r9gD9BZ7t?usp=sharing)
-* [Jira](https://coinershot.atlassian.net/jira/software/projects/SSS/pages?atlOrigin=eyJpIjoiNTkzOGI4ZTJjYjg3NDI4Mzg2MzI0ZDVkOTM5MDFkMzgiLCJwIjoiaiJ9)
+* [Jira](https://coinershot.atlassian.net/jira/software/projects/SSS/summary?atlOrigin=eyJpIjoiNzA0MjkwYWRjMmEyNDRhYmFmNDdjYTA5YjY2YTJjY2EiLCJwIjoiaiJ9)
 
 ---
 ## Table of Contents
